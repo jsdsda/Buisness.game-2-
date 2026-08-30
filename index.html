@@ -4,74 +4,103 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tech-Imperium Tycoon</title>
+    <!-- Tailwind CSS für modernes Design -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col items-center p-6">
 
-    <header class="w-full max-w-4xl bg-slate-800 p-6 rounded-xl shadow-lg mb-6 flex justify-between items-center border border-slate-700">
+    <!-- Header / Dashboard -->
+    <header class="w-full max-w-4xl bg-slate-800 p-6 rounded-xl shadow-lg mb-6 flex flex-col md:flex-row justify-between items-center border border-slate-700 gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-emerald-400">🚀 Tech-Imperium</h1>
-            <p class="text-sm text-slate-400">Von der Garage zum Weltkonzern</p>
+            <h1 id="officeLevel" class="text-2xl font-bold text-emerald-400">🏢 Garage (Stufe 1)</h1>
+            <p class="text-sm text-slate-400">Vom Hobby-Coder zum Tech-Giganten</p>
         </div>
-        <div class="flex gap-6 text-right">
-            <div>
+        <div class="grid grid-cols-2 md:flex gap-4 text-center md:text-right">
+            <div class="bg-slate-700/50 p-3 rounded-lg">
                 <p class="text-xs text-slate-400">Geld</p>
                 <p id="money" class="text-xl font-bold text-emerald-400">0 €</p>
             </div>
-            <div>
+            <div class="bg-slate-700/50 p-3 rounded-lg">
                 <p class="text-xs text-slate-400">Code-Zeilen</p>
                 <p id="code" class="text-xl font-bold text-blue-400">0</p>
             </div>
-            <div>
-                <p class="text-xs text-slate-400">Server-Kapazität</p>
+            <div class="bg-slate-700/50 p-3 rounded-lg col-span-2 md:col-span-1">
+                <p class="text-xs text-slate-400">Server (Auslastung)</p>
                 <p id="servers" class="text-xl font-bold text-purple-400">0 / 5</p>
             </div>
         </div>
     </header>
 
+    <!-- Hauptbereich -->
     <main class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6">
 
+        <!-- Linke Spalte: Aktive Entwicklung & Sprachen -->
         <section class="bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-700 flex flex-col justify-between">
             <div>
-                <h2 class="text-lg font-semibold mb-4 border-b border-slate-700 pb-2">Entwicklung</h2>
-                <p class="text-sm text-slate-300 mb-6">Schreibe selbst Code, um deine ersten digitalen Produkte zu erschaffen.</p>
+                <h2 class="text-lg font-semibold mb-4 border-b border-slate-700 pb-2">💻 Programmieren</h2>
+                <p class="text-sm text-slate-300 mb-4">Wähle deine Sprache und tippe Code:</p>
+                
+                <!-- Sprachauswahl -->
+                <div class="grid grid-cols-3 gap-2 mb-6">
+                    <button onclick="setLang('Python', 1)" id="btnPython" class="bg-blue-700 hover:bg-blue-600 p-2 rounded text-xs font-bold transition border border-blue-400">Python (+1)</button>
+                    <button onclick="setLang('Java', 2)" id="btnJava" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-xs font-bold transition border border-transparent">Java (+2)</button>
+                    <button onclick="setLang('C++', 4)" id="btnCpp" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-xs font-bold transition border border-transparent">C++ (+4)</button>
+                </div>
             </div>
-            <button onclick="writeCode()" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 transition font-bold py-4 rounded-lg shadow-md text-lg">
-                💻 Code schreiben (+1)
+
+            <!-- Der große Coden-Button -->
+            <button onclick="writeCode()" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 transition font-bold py-6 rounded-lg shadow-md text-xl flex flex-col items-center justify-center gap-1">
+                <span>🚀 Code schreiben</span>
+                <span id="clickPowerText" class="text-xs font-normal text-blue-200">Aktuell: Python (+1 Zeile)</span>
             </button>
         </section>
 
+        <!-- Rechte Spalte: Shop & Upgrades -->
         <section class="bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-700">
-            <h2 class="text-lg font-semibold mb-4 border-b border-slate-700 pb-2">Management & Upgrades</h2>
+            <h2 class="text-lg font-semibold mb-4 border-b border-slate-700 pb-2">📈 Management & Ausbau</h2>
             
-            <div class="space-y-4">
+            <div class="space-y-3">
+                <!-- App verkaufen -->
                 <div class="flex justify-between items-center bg-slate-700/50 p-3 rounded-lg">
                     <div>
-                        <p class="font-medium">Software monetarisieren</p>
+                        <p class="font-medium text-sm">Software monetarisieren</p>
                         <p class="text-xs text-slate-400">10 Code = 5 €</p>
                     </div>
-                    <button onclick="sellCode()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded font-medium text-sm transition">
+                    <button onclick="sellCode()" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded font-medium text-xs transition">
                         Verkaufen
                     </button>
                 </div>
 
+                <!-- Server kaufen -->
                 <div class="flex justify-between items-center bg-slate-700/50 p-3 rounded-lg">
                     <div>
-                        <p class="font-medium">Server-Rack mieten</p>
-                        <p class="text-xs text-slate-400">Kosten: 50 € (Erhöht Infrastruktur)</p>
+                        <p class="font-medium text-sm">Server-Rack mieten</p>
+                        <p class="text-xs text-slate-400">Kostet: 50 € (+5 Kapazität)</p>
                     </div>
-                    <button onclick="buyServer()" class="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded font-medium text-sm transition">
+                    <button onclick="buyServer()" class="bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded font-medium text-xs transition">
                         Mieten
                     </button>
                 </div>
 
+                <!-- Junior Dev einstellen -->
                 <div class="flex justify-between items-center bg-slate-700/50 p-3 rounded-lg">
                     <div>
-                        <p class="font-medium">Junior Dev einstellen</p>
-                        <p class="text-xs text-slate-400">Kosten: 100 € (+1 Code/Sekunde)</p>
+                        <p class="font-medium text-sm">Junior Dev einstellen</p>
+                        <p class="text-xs text-slate-400">100 € (bringt +1 Code/Sek)</p>
                     </div>
-                    <button onclick="hireDev()" class="bg-amber-600 hover:bg-amber-500 px-4 py-2 rounded font-medium text-sm transition">
-                        Einstellen (<span id="devCount">0</span>)
+                    <button onclick="hireDev()" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded font-medium text-xs transition">
+                        +1 Dev (<span id="devCount">0</span>)
+                    </button>
+                </div>
+
+                <!-- Büro upgraden -->
+                <div class="flex justify-between items-center bg-slate-700/50 p-3 rounded-lg">
+                    <div>
+                        <p class="font-medium text-sm">Büro vergrößern</p>
+                        <p id="officeCostText" class="text-xs text-slate-400">Kostet: 500 €</p>
+                    </div>
+                    <button onclick="upgradeOffice()" class="bg-rose-600 hover:bg-rose-500 px-3 py-1.5 rounded font-medium text-xs transition">
+                        Umziehen
                     </button>
                 </div>
             </div>
@@ -79,6 +108,7 @@
 
     </main>
 
+    <!-- JavaScript Spiel-Logik -->
     <script>
         // Spiel-Variablen
         let money = 0;
@@ -86,7 +116,18 @@
         let servers = 0;
         let maxServers = 5;
         let devs = 0;
-        let devPower = 1;
+        
+        let currentLang = 'Python';
+        let clickPower = 1;
+
+        let officeStage = 1;
+        let officeCosts = [500, 2500, 10000];
+        let officeNames = [
+            "🏢 Garage (Stufe 1)", 
+            "💻 WG-Zimmer (Stufe 2)", 
+            "🌆 Loft-Büro (Stufe 3)", 
+            "🚀 Tech-Campus (Max)"
+        ];
 
         // UI-Elemente aktualisieren
         function updateUI() {
@@ -94,11 +135,35 @@
             document.getElementById('code').innerText = code;
             document.getElementById('servers').innerText = servers + ' / ' + maxServers;
             document.getElementById('devCount').innerText = devs;
+            
+            // Büro-Name anpassen
+            if (officeStage - 1 < officeNames.length) {
+                document.getElementById('officeLevel').innerText = officeNames[officeStage - 1];
+            }
+            
+            // Büro-Kosten Text
+            if (officeStage - 1 < officeCosts.length) {
+                document.getElementById('officeCostText').innerText = "Kostet: " + officeCosts[officeStage - 1] + " €";
+            } else {
+                document.getElementById('officeCostText').innerText = "Maximum erreicht!";
+            }
         }
 
-        // Spieler klickt auf "Code schreiben"
+        // Programmiersprache wechseln
+        function setLang(lang, power) {
+            currentLang = lang;
+            clickPower = power;
+            document.getElementById('clickPowerText').innerText = "Aktuell: " + lang + " (+" + power + " Zeilen)";
+            
+            // Design der Buttons umschalten
+            document.getElementById('btnPython').className = lang === 'Python' ? "bg-blue-700 p-2 rounded text-xs font-bold transition border border-blue-400" : "bg-slate-700 hover:bg-slate-600 p-2 rounded text-xs font-bold transition border border-transparent";
+            document.getElementById('btnJava').className = lang === 'Java' ? "bg-blue-700 p-2 rounded text-xs font-bold transition border border-blue-400" : "bg-slate-700 hover:bg-slate-600 p-2 rounded text-xs font-bold transition border border-transparent";
+            document.getElementById('btnCpp').className = lang === 'C++' ? "bg-blue-700 p-2 rounded text-xs font-bold transition border border-blue-400" : "bg-slate-700 hover:bg-slate-600 p-2 rounded text-xs font-bold transition border border-transparent";
+        }
+
+        // Spieler klickt auf Code schreiben
         function writeCode() {
-            code += 1;
+            code += clickPower;
             updateUI();
         }
 
@@ -106,10 +171,10 @@
         function sellCode() {
             if (code >= 10) {
                 code -= 10;
-                money += 5;
+                money += 5 * officeStage; // Multiplikator durch besseres Büro
                 updateUI();
             } else {
-                alert("Nicht genug Code vorhanden! (Mindestens 10 nötig)");
+                alert("Nicht genug Code vorhanden! (Mindestens 10 Zeilen nötig)");
             }
         }
 
@@ -136,10 +201,27 @@
             }
         }
 
+        // Büro upgraden
+        function upgradeOffice() {
+            let index = officeStage - 1;
+            if (index < officeCosts.length) {
+                if (money >= officeCosts[index]) {
+                    money -= officeCosts[index];
+                    officeStage++;
+                    updateUI();
+                    alert("Glückwunsch zum Umzug in eine neue Location!");
+                } else {
+                    alert("Nicht genug Geld für den Umzug! (Du brauchst " + officeCosts[index] + " €)");
+                }
+            } else {
+                alert("Du hast bereits das absolute Maximum erreicht!");
+            }
+        }
+
         // Game Loop (Passives Einkommen durch Entwickler jede Sekunde)
         setInterval(function() {
             if (devs > 0) {
-                code += devs * devPower;
+                code += devs; // Jeder Dev bringt 1 Code pro Sekunde
                 updateUI();
             }
         }, 1000);
