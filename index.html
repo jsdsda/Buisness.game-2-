@@ -3,125 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech-Imperium Tycoon</title>
-    <!-- Tailwind CSS für modernes Design -->
+    <title>Tech-Imperium Tycoon - Hardcore Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col items-center p-6">
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col items-center p-4 md:p-6">
 
     <!-- Header / Dashboard -->
-    <header class="w-full max-w-4xl bg-slate-800 p-6 rounded-xl shadow-lg mb-6 flex flex-col md:flex-row justify-between items-center border border-slate-700 gap-4">
+    <header class="w-full max-w-5xl bg-slate-900 p-5 rounded-xl shadow-xl mb-6 flex flex-col md:flex-row justify-between items-center border border-slate-800 gap-4">
         <div>
-            <h1 id="officeLevel" class="text-2xl font-bold text-emerald-400">🏢 Garage (Stufe 1)</h1>
-            <p class="text-sm text-slate-400">Vom Hobby-Coder zum Tech-Giganten</p>
+            <h1 id="officeLevel" class="text-xl md:text-2xl font-bold text-emerald-400">🏢 Garage (Stufe 1)</h1>
+            <p class="text-xs text-slate-400">Vom Hobby-Coder zum globalen Tech-Giganten</p>
         </div>
-        <div class="grid grid-cols-2 md:flex gap-4 text-center md:text-right">
-            <div class="bg-slate-700/50 p-3 rounded-lg">
-                <p class="text-xs text-slate-400">Geld</p>
-                <p id="money" class="text-xl font-bold text-emerald-400">0 €</p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
+                <p class="text-[10px] text-slate-400 uppercase tracking-wider">Kapital</p>
+                <p id="money" class="text-base md:text-lg font-bold text-emerald-400">0 €</p>
             </div>
-            <div class="bg-slate-700/50 p-3 rounded-lg">
-                <p class="text-xs text-slate-400">Code-Zeilen</p>
-                <p id="code" class="text-xl font-bold text-blue-400">0</p>
+            <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
+                <p class="text-[10px] text-slate-400 uppercase tracking-wider">Code-Zeilen</p>
+                <p id="code" class="text-base md:text-lg font-bold text-blue-400">0</p>
             </div>
-            <div class="bg-slate-700/50 p-3 rounded-lg col-span-2 md:col-span-1">
-                <p class="text-xs text-slate-400">Server (Auslastung)</p>
-                <p id="servers" class="text-xl font-bold text-purple-400">0 / 5</p>
+            <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
+                <p class="text-[10px] text-slate-400 uppercase tracking-wider">Bugs (Tech Debt)</p>
+                <p id="bugs" class="text-base md:text-lg font-bold text-rose-400">0</p>
+            </div>
+            <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
+                <p class="text-[10px] text-slate-400 uppercase tracking-wider">Server-Auslastung</p>
+                <p id="servers" class="text-base md:text-lg font-bold text-purple-400">0 / 5</p>
             </div>
         </div>
     </header>
 
     <!-- Hauptbereich -->
-    <main class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6">
+    <main class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        <!-- Linke Spalte: Aktive Entwicklung & Sprachen -->
-        <section class="bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-700 flex flex-col justify-between">
+        <!-- Spalte 1: Aktive Entwicklung & Energie -->
+        <section class="bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800 flex flex-col justify-between space-y-4">
             <div>
-                <h2 class="text-lg font-semibold mb-4 border-b border-slate-700 pb-2">💻 Programmieren</h2>
-                <p class="text-sm text-slate-300 mb-4">Wähle deine Sprache und tippe Code:</p>
+                <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-blue-400">💻 Entwicklung & Fokus</h2>
                 
+                <!-- Energieleiste -->
+                <div class="mb-4">
+                    <div class="flex justify-between text-xs text-slate-400 mb-1">
+                        <span>Energie (Ausdauer)</span>
+                        <span id="energyText">100 / 100</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden border border-slate-700">
+                        <div id="energyBar" class="bg-amber-500 h-full transition-all duration-200" style="width: 100%;"></div>
+                    </div>
+                </div>
+
                 <!-- Sprachauswahl -->
-                <div class="grid grid-cols-3 gap-2 mb-6">
-                    <button onclick="setLang('Python', 1)" id="btnPython" class="bg-blue-700 hover:bg-blue-600 p-2 rounded text-xs font-bold transition border border-blue-400">Python (+1)</button>
-                    <button onclick="setLang('Java', 2)" id="btnJava" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-xs font-bold transition border border-transparent">Java (+2)</button>
-                    <button onclick="setLang('C++', 4)" id="btnCpp" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-xs font-bold transition border border-transparent">C++ (+4)</button>
+                <p class="text-xs text-slate-400 mb-2">Programmiersprache wählen:</p>
+                <div class="grid grid-cols-3 gap-1.5 mb-4">
+                    <button onclick="setLang('Python', 1, 2)" id="btnPython" class="bg-blue-600 p-2 rounded text-xs font-bold transition border border-blue-400">Python</button>
+                    <button onclick="setLang('Java', 3, 5)" id="btnJava" class="bg-slate-800 hover:bg-slate-700 p-2 rounded text-xs font-bold transition border border-transparent">Java</button>
+                    <button onclick="setLang('C++', 6, 10)" id="btnCpp" class="bg-slate-800 hover:bg-slate-700 p-2 rounded text-xs font-bold transition border border-transparent">C++</button>
                 </div>
             </div>
 
-            <!-- Der große Coden-Button -->
-            <button onclick="writeCode()" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 transition font-bold py-6 rounded-lg shadow-md text-xl flex flex-col items-center justify-center gap-1">
-                <span>🚀 Code schreiben</span>
-                <span id="clickPowerText" class="text-xs font-normal text-blue-200">Aktuell: Python (+1 Zeile)</span>
-            </button>
+            <div class="space-y-2">
+                <!-- Coden Button -->
+                <button onclick="writeCode()" id="codeBtn" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 transition font-bold py-4 rounded-lg shadow-md text-sm flex flex-col items-center justify-center gap-0.5">
+                    <span>⚡ Code schreiben</span>
+                    <span id="clickPowerText" class="text-[10px] font-normal text-blue-200">+1 Zeile, +2 Bugs (Kostet 5 Energie)</span>
+                </button>
+
+                <!-- Bugs fixen Button -->
+                <button onclick="fixBugs()" class="w-full bg-emerald-700 hover:bg-emerald-600 active:scale-95 transition font-bold py-2.5 rounded-lg shadow-md text-xs">
+                    🧹 Bugs manuell bereinigen (-10 Bugs)
+                </button>
+
+                <!-- Kaffee trinken -->
+                <button onclick="buyCoffee()" class="w-full bg-amber-700 hover:bg-amber-600 active:scale-95 transition font-medium py-2 rounded-lg text-xs flex justify-between px-3 items-center">
+                    <span>☕ Kaffee trinken (Energie auffüllen)</span>
+                    <span class="text-[10px] text-amber-200">10 €</span>
+                </button>
+            </div>
         </section>
 
-        <!-- Rechte Spalte: Shop & Upgrades -->
-        <section class="bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-700">
-            <h2 class="text-lg font-semibold mb-4 border-b border-slate-700 pb-2">📈 Management & Ausbau</h2>
-            
-            <div class="space-y-3">
-                <!-- App verkaufen -->
-                <div class="flex justify-between items-center bg-slate-700/50 p-3 rounded-lg">
-                    <div>
-                        <p class="font-medium text-sm">Software monetarisieren</p>
-                        <p class="text-xs text-slate-400">10 Code = 5 €</p>
+        <!-- Spalte 2: Management, Personal & Server -->
+        <section class="bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800 flex flex-col justify-between space-y-4">
+            <div>
+                <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-emerald-400">📈 Infrastruktur & Team</h2>
+                
+                <div class="space-y-2.5">
+                    <!-- App monetarisieren -->
+                    <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
+                        <div>
+                            <p class="font-medium text-xs">Release & Monetarisieren</p>
+                            <p class="text-[10px] text-slate-400">20 Code = 15 € (Minus Bugs)</p>
+                        </div>
+                        <button onclick="sellCode()" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded font-medium text-xs transition">
+                            Verkaufen
+                        </button>
                     </div>
-                    <button onclick="sellCode()" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded font-medium text-xs transition">
-                        Verkaufen
-                    </button>
-                </div>
 
-                <!-- Server kaufen -->
-                <div class="flex justify-between items-center bg-slate-700/50 p-3 rounded-lg">
-                    <div>
-                        <p class="font-medium text-sm">Server-Rack mieten</p>
-                        <p class="text-xs text-slate-400">Kostet: 50 € (+5 Kapazität)</p>
+                    <!-- Server mieten -->
+                    <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
+                        <div>
+                            <p class="font-medium text-xs">Server-Rack mieten</p>
+                            <p class="text-[10px] text-slate-400">100 € (+10 Kapazität)</p>
+                        </div>
+                        <button onclick="buyServer()" class="bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded font-medium text-xs transition">
+                            Mieten
+                        </button>
                     </div>
-                    <button onclick="buyServer()" class="bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded font-medium text-xs transition">
-                        Mieten
-                    </button>
-                </div>
 
-                <!-- Junior Dev einstellen -->
-                <div class="flex justify-between items-center bg-slate-700/50 p-3 rounded-lg">
-                    <div>
-                        <p class="font-medium text-sm">Junior Dev einstellen</p>
-                        <p class="text-xs text-slate-400">100 € (bringt +1 Code/Sek)</p>
+                    <!-- Junior Dev -->
+                    <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
+                        <div>
+                            <p class="font-medium text-xs">Junior Dev (<span id="devCount">0</span>)</p>
+                            <p class="text-[10px] text-slate-400">250 € (+1 Code/s, +0.5 Bug/s)</p>
+                        </div>
+                        <button onclick="hireDev()" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded font-medium text-xs transition">
+                            Einstellen
+                        </button>
                     </div>
-                    <button onclick="hireDev()" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded font-medium text-xs transition">
-                        +1 Dev (<span id="devCount">0</span>)
-                    </button>
-                </div>
 
-                <!-- Büro upgraden -->
-                <div class="flex justify-between items-center bg-slate-700/50 p-3 rounded-lg">
-                    <div>
-                        <p class="font-medium text-sm">Büro vergrößern</p>
-                        <p id="officeCostText" class="text-xs text-slate-400">Kostet: 500 €</p>
+                    <!-- Sysadmin -->
+                    <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
+                        <div>
+                            <p class="font-medium text-xs">Sysadmin / QA (<span id="adminCount">0</span>)</p>
+                            <p class="text-[10px] text-slate-400">600 € (Reduziert Bugs)</p>
+                        </div>
+                        <button onclick="hireAdmin()" class="bg-rose-600 hover:bg-rose-500 px-3 py-1.5 rounded font-medium text-xs transition">
+                            Einstellen
+                        </button>
                     </div>
-                    <button onclick="upgradeOffice()" class="bg-rose-600 hover:bg-rose-500 px-3 py-1.5 rounded font-medium text-xs transition">
+                </div>
+            </div>
+
+            <!-- Büro-Upgrade -->
+            <div class="bg-slate-800/40 p-3 rounded-lg border border-slate-800">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="font-medium text-xs">Büro-Erweiterung</p>
+                        <p id="officeCostText" class="text-[10px] text-slate-400">Kostet: 1.500 €</p>
+                    </div>
+                    <button onclick="upgradeOffice()" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-2 rounded font-medium text-xs transition">
                         Umziehen
                     </button>
                 </div>
             </div>
         </section>
 
+        <!-- Spalte 3: Forschungsbaum & Tech-Stack -->
+        <section class="bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800 flex flex-col justify-between">
+            <div>
+                <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-purple-400">🔬 Forschungsbaum</h2>
+                <p class="text-[11px] text-slate-400 mb-3">Erforsche neue Technologien, um deinen Ertrag zu multiplizieren.</p>
+
+                <div class="space-y-2.5">
+                    <!-- Forschung 1 -->
+                    <div id="res1Box" class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center">
+                        <div>
+                            <p class="font-medium text-xs text-slate-200">Agiles Projektmanagement</p>
+                            <p class="text-[10px] text-slate-400">Kosten: 50 Code, 200 €</p>
+                        </div>
+                        <button onclick="researchTech(1, 50, 200)" id="res1Btn" class="bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded text-xs transition">
+                            Erforschen
+                        </button>
+                    </div>
+
+                    <!-- Forschung 2 -->
+                    <div id="res2Box" class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center opacity-50">
+                        <div>
+                            <p class="font-medium text-xs text-slate-200">KI-Code-Assistenz</p>
+                            <p class="text-[10px] text-slate-400">Kosten: 200 Code, 1.000 €</p>
+                        </div>
+                        <button onclick="researchTech(2, 200, 1000)" id="res2Btn" class="bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded text-xs transition" disabled>
+                            Gesperrt
+                        </button>
+                    </div>
+
+                    <!-- Forschung 3 -->
+                    <div id="res3Box" class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center opacity-50">
+                        <div>
+                            <p class="font-medium text-xs text-slate-200">Eigene Cloud-Infrastruktur</p>
+                            <p class="text-[10px] text-slate-400">Kosten: 600 Code, 5.000 €</p>
+                        </div>
+                        <button onclick="researchTech(3, 600, 5000)" id="res3Btn" class="bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded text-xs transition" disabled>
+                            Gesperrt
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-800 text-center">
+                <p id="eventLog" class="text-[11px] text-amber-400 italic">Status: Bereit für den Aufbau des Tech-Imperiums.</p>
+            </div>
+        </section>
+
     </main>
 
-    <!-- JavaScript Spiel-Logik -->
+    <!-- JavaScript Hardcore Spiel-Logik -->
     <script>
-        // Spiel-Variablen
         let money = 0;
         let code = 0;
-        let servers = 0;
-        let maxServers = 5;
+        let bugs = 0;
+        let servers = 2;
+        let maxServers = 10;
+        
+        let energy = 100;
+        let maxEnergy = 100;
+
         let devs = 0;
+        let admins = 0;
         
         let currentLang = 'Python';
         let clickPower = 1;
+        let bugPower = 2;
 
         let officeStage = 1;
-        let officeCosts = [500, 2500, 10000];
+        let officeCosts = [1500, 8000, 30000];
         let officeNames = [
             "🏢 Garage (Stufe 1)", 
             "💻 WG-Zimmer (Stufe 2)", 
@@ -129,101 +224,201 @@
             "🚀 Tech-Campus (Max)"
         ];
 
-        // UI-Elemente aktualisieren
+        let researchUnlocked = [false, false, false];
+
         function updateUI() {
-            document.getElementById('money').innerText = money + ' €';
-            document.getElementById('code').innerText = code;
+            document.getElementById('money').innerText = money.toLocaleString() + ' €';
+            document.getElementById('code').innerText = code.toLocaleString();
+            document.getElementById('bugs').innerText = bugs;
             document.getElementById('servers').innerText = servers + ' / ' + maxServers;
-            document.getElementById('devCount').innerText = devs;
             
-            // Büro-Name anpassen
+            document.getElementById('energyText').innerText = Math.floor(energy) + ' / ' + maxEnergy;
+            document.getElementById('energyBar').style.width = (energy / maxEnergy * 100) + '%';
+            
+            document.getElementById('devCount').innerText = devs;
+            document.getElementById('adminCount').innerText = admins;
+
             if (officeStage - 1 < officeNames.length) {
                 document.getElementById('officeLevel').innerText = officeNames[officeStage - 1];
             }
-            
-            // Büro-Kosten Text
             if (officeStage - 1 < officeCosts.length) {
-                document.getElementById('officeCostText').innerText = "Kostet: " + officeCosts[officeStage - 1] + " €";
+                document.getElementById('officeCostText').innerText = "Kostet: " + officeCosts[officeStage - 1].toLocaleString() + " €";
             } else {
                 document.getElementById('officeCostText').innerText = "Maximum erreicht!";
             }
         }
 
-        // Programmiersprache wechseln
-        function setLang(lang, power) {
+        function setLang(lang, power, bPower) {
             currentLang = lang;
             clickPower = power;
-            document.getElementById('clickPowerText').innerText = "Aktuell: " + lang + " (+" + power + " Zeilen)";
+            bugPower = bPower;
             
-            // Design der Buttons umschalten
-            document.getElementById('btnPython').className = lang === 'Python' ? "bg-blue-700 p-2 rounded text-xs font-bold transition border border-blue-400" : "bg-slate-700 hover:bg-slate-600 p-2 rounded text-xs font-bold transition border border-transparent";
-            document.getElementById('btnJava').className = lang === 'Java' ? "bg-blue-700 p-2 rounded text-xs font-bold transition border border-blue-400" : "bg-slate-700 hover:bg-slate-600 p-2 rounded text-xs font-bold transition border border-transparent";
-            document.getElementById('btnCpp').className = lang === 'C++' ? "bg-blue-700 p-2 rounded text-xs font-bold transition border border-blue-400" : "bg-slate-700 hover:bg-slate-600 p-2 rounded text-xs font-bold transition border border-transparent";
+            // Forschungen Multiplikatoren einrechnen
+            if (researchUnlocked[1]) { clickPower *= 2; }
+            
+            document.getElementById('clickPowerText').innerText = "+" + clickPower + " Zeilen, +" + bugPower + " Bugs (Kostet 5 Energie)";
+            
+            document.getElementById('btnPython').className = lang === 'Python' ? "bg-blue-600 p-2 rounded text-xs font-bold transition border border-blue-400" : "bg-slate-800 hover:bg-slate-700 p-2 rounded text-xs font-bold transition border border-transparent";
+            document.getElementById('btnJava').className = lang === 'Java' ? "bg-blue-600 p-2 rounded text-xs font-bold transition border border-blue-400" : "bg-slate-800 hover:bg-slate-700 p-2 rounded text-xs font-bold transition border border-transparent";
+            document.getElementById('btnCpp').className = lang === 'C++' ? "bg-blue-600 p-2 rounded text-xs font-bold transition border border-blue-400" : "bg-slate-800 hover:bg-slate-700 p-2 rounded text-xs font-bold transition border border-transparent";
         }
 
-        // Spieler klickt auf Code schreiben
         function writeCode() {
-            code += clickPower;
+            if (energy >= 5) {
+                code += clickPower;
+                bugs += bugPower;
+                energy -= 5;
+                updateUI();
+            } else {
+                document.getElementById('eventLog').innerText = "⚠️ Zu müde! Trink einen Kaffee.";
+            }
+        }
+
+        function fixBugs() {
+            if (bugs >= 10) {
+                bugs -= 10;
+            } else {
+                bugs = 0;
+            }
             updateUI();
         }
 
-        // Code gegen Geld tauschen
+        function buyCoffee() {
+            if (money >= 10) {
+                money -= 10;
+                energy = maxEnergy;
+                document.getElementById('eventLog').innerText = "☕ Frische Energie getankt!";
+                updateUI();
+            } else {
+                alert("Nicht genug Geld für Kaffee!");
+            }
+        }
+
         function sellCode() {
-            if (code >= 10) {
-                code -= 10;
-                money += 5 * officeStage; // Multiplikator durch besseres Büro
+            if (code >= 20) {
+                code -= 20;
+                let earnings = 15 * officeStage;
+                // Strafabzug durch Bugs
+                if (bugs > 50) {
+                    earnings = Math.floor(earnings * 0.5);
+                    document.getElementById('eventLog').innerText = "⚠️ Zu viele Bugs! Kunden beschweren sich (Einnahmen halbiert).";
+                } else {
+                    document.getElementById('eventLog').innerText = "✅ Software erfolgreich verkauft!";
+                }
+                money += earnings;
                 updateUI();
             } else {
-                alert("Nicht genug Code vorhanden! (Mindestens 10 Zeilen nötig)");
+                alert("Du brauchst mindestens 20 Code-Zeilen zum Verkaufen!");
             }
         }
 
-        // Server kaufen
         function buyServer() {
-            if (money >= 50) {
-                money -= 50;
-                servers += 1;
-                maxServers += 5;
-                updateUI();
-            } else {
-                alert("Nicht genug Geld! (Kostet 50 €)");
-            }
-        }
-
-        // Entwickler einstellen
-        function hireDev() {
             if (money >= 100) {
                 money -= 100;
+                servers += 1;
+                maxServers += 10;
+                updateUI();
+            } else {
+                alert("Nicht genug Kapital für Server!");
+            }
+        }
+
+        function hireDev() {
+            if (money >= 250) {
+                money -= 250;
                 devs += 1;
                 updateUI();
             } else {
-                alert("Nicht genug Geld! (Kostet 100 €)");
+                alert("Nicht genug Kapital für Junior Dev!");
             }
         }
 
-        // Büro upgraden
+        function hireAdmin() {
+            if (money >= 600) {
+                money -= 600;
+                admins += 1;
+                updateUI();
+            } else {
+                alert("Nicht genug Kapital für Sysadmin!");
+            }
+        }
+
         function upgradeOffice() {
             let index = officeStage - 1;
             if (index < officeCosts.length) {
                 if (money >= officeCosts[index]) {
                     money -= officeCosts[index];
                     officeStage++;
+                    maxEnergy += 50;
+                    energy = maxEnergy;
                     updateUI();
-                    alert("Glückwunsch zum Umzug in eine neue Location!");
+                    alert("Glückwunsch zum Umzug in ein besseres Büro! Maximale Energie erhöht.");
                 } else {
-                    alert("Nicht genug Geld für den Umzug! (Du brauchst " + officeCosts[index] + " €)");
+                    alert("Nicht genug Kapital für den Umzug!");
                 }
             } else {
-                alert("Du hast bereits das absolute Maximum erreicht!");
+                alert("Höchste Stufe erreicht!");
             }
         }
 
-        // Game Loop (Passives Einkommen durch Entwickler jede Sekunde)
-        setInterval(function() {
-            if (devs > 0) {
-                code += devs; // Jeder Dev bringt 1 Code pro Sekunde
+        function researchTech(id, codeCost, moneyCost) {
+            if (code >= codeCost && money >= moneyCost) {
+                code -= codeCost;
+                money -= moneyCost;
+                researchUnlocked[id] = true;
+                
+                if (id === 1) {
+                    document.getElementById('res1Box').style.opacity = "0.5";
+                    document.getElementById('res1Btn').innerText = "Erforscht";
+                    document.getElementById('res1Btn').disabled = true;
+                    
+                    // Freischalten von Forschung 2
+                    document.getElementById('res2Box').style.opacity = "1";
+                    document.getElementById('res2Btn').innerText = "Erforschen";
+                    document.getElementById('res2Btn').disabled = false;
+                    clickPower *= 2;
+                } else if (id === 2) {
+                    document.getElementById('res2Box').style.opacity = "0.5";
+                    document.getElementById('res2Btn').innerText = "Erforscht";
+                    document.getElementById('res2Btn').disabled = true;
+                    
+                    // Freischalten von Forschung 3
+                    document.getElementById('res3Box').style.opacity = "1";
+                    document.getElementById('res3Btn').innerText = "Erforschen";
+                    document.getElementById('res3Btn').disabled = false;
+                } else if (id === 3) {
+                    document.getElementById('res3Box').style.opacity = "0.5";
+                    document.getElementById('res3Btn').innerText = "Erforscht";
+                    document.getElementById('res3Btn').disabled = true;
+                }
+                alert("Technologie erfolgreich erforscht!");
                 updateUI();
+            } else {
+                alert("Nicht genug Code oder Geld für diese Forschung!");
             }
+        }
+
+        // Game Loop (Passives System)
+        setInterval(function() {
+            // Energie regeneriert sich langsam von allein
+            if (energy < maxEnergy) {
+                energy += 1;
+                if (energy > maxEnergy) energy = maxEnergy;
+            }
+
+            // Entwickler generieren Code und Bugs
+            if (devs > 0) {
+                code += devs;
+                bugs += Math.round(devs * 0.5);
+            }
+
+            // Sysadmins entfernen automatisch Bugs
+            if (admins > 0) {
+                bugs -= admins * 2;
+                if (bugs < 0) bugs = 0;
+            }
+
+            updateUI();
         }, 1000);
     </script>
 </body>
