@@ -1,331 +1,524 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech-Imperium Tycoon - Management Edition</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tech-Imperium Tycoon - Management Edition</title>
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col items-center p-4 md:p-6">
 
-    <!-- Header / Dashboard -->
-    <header class="w-full max-w-5xl bg-slate-900 p-5 rounded-xl shadow-xl mb-6 flex flex-col md:flex-row justify-between items-center border border-slate-800 gap-4">
+<!-- Header / Dashboard -->
+<header class="w-full max-w-6xl bg-slate-900 p-5 rounded-xl shadow-xl mb-6 flex flex-col md:flex-row justify-between items-center border border-slate-800 gap-4">
+    <div>
+        <h1 id="officeLevel" class="text-xl md:text-2xl font-bold text-emerald-400">🏢 Garage (Stufe 1)</h1>
+        <p class="text-xs text-slate-400">Vom Einzelkämpfer zum Software-Konzern-Chef</p>
+        <p class="text-[10px] text-slate-500 mt-1">Reputation: <span id="reputation" class="text-yellow-400 font-bold">50</span>/100 · Prestige: <span id="prestigeLevel" class="text-fuchsia-400 font-bold">0</span> · Forschungspunkte: <span id="researchPoints" class="text-cyan-400 font-bold">0</span></p>
+    </div>
+    <div class="grid grid-cols-3 sm:grid-cols-6 gap-3 text-center">
+        <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
+            <p class="text-[10px] text-slate-400 uppercase tracking-wider">Kapital</p>
+            <p id="money" class="text-base md:text-lg font-bold text-emerald-400">100 €</p>
+        </div>
+        <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
+            <p class="text-[10px] text-slate-400 uppercase tracking-wider">Projekte</p>
+            <p id="projectProgress" class="text-base md:text-lg font-bold text-blue-400">0/1</p>
+        </div>
+        <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
+            <p class="text-[10px] text-slate-400 uppercase tracking-wider">Bugs</p>
+            <p id="bugs" class="text-base md:text-lg font-bold text-rose-400">0</p>
+        </div>
+        <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
+            <p class="text-[10px] text-slate-400 uppercase tracking-wider">Server</p>
+            <p id="servers" class="text-base md:text-lg font-bold text-purple-400">2 / 10</p>
+        </div>
+        <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
+            <p class="text-[10px] text-slate-400 uppercase tracking-wider">Gehälter/s</p>
+            <p id="salaryPerSec" class="text-base md:text-lg font-bold text-orange-400">0 €</p>
+        </div>
+        <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
+            <p class="text-[10px] text-slate-400 uppercase tracking-wider">Team-Speed</p>
+            <p id="teamSpeed" class="text-base md:text-lg font-bold text-cyan-400">0/s</p>
+        </div>
+    </div>
+</header>
+
+<!-- Hauptbereich -->
+<main class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-4 gap-6">
+
+    <!-- Spalte 1: Projekt-Management -->
+    <section class="bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800 flex flex-col justify-between space-y-4 md:col-span-2">
         <div>
-            <h1 id="officeLevel" class="text-xl md:text-2xl font-bold text-emerald-400">🏢 Garage (Stufe 1)</h1>
-            <p class="text-xs text-slate-400">Vom Einzelkämpfer zum Software-Konzern-Chef</p>
+            <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-blue-400">📋 Projekt-Pipeline</h2>
+            <p class="text-[11px] text-slate-400 mb-4">Wähle Projekte. Slots hängen von Büro-Stufe & Servern ab. Jedes Projekt braucht 1 Server-Kapazität.</p>
+
+            <div id="activeProjectsContainer" class="space-y-3 mb-4"></div>
+
+            <div class="space-y-2">
+                <p class="text-[10px] text-slate-500 uppercase mb-1">Verfügbare Aufträge (Reputation schaltet größere frei)</p>
+                <button onclick="startProject('Bugfix-Tool', 50, 60, 5)" class="w-full bg-slate-800 hover:bg-slate-700 p-2 rounded text-left text-xs transition border border-slate-700 flex justify-between items-center">
+                    <span>🛠️ Bugfix-Tool (Klein)</span>
+                    <span class="text-emerald-400 font-bold">+60 € · +5 RP</span>
+                </button>
+                <button onclick="startProject('Mobile App', 200, 300, 15)" class="w-full bg-slate-800 hover:bg-slate-700 p-2 rounded text-left text-xs transition border border-slate-700 flex justify-between items-center">
+                    <span>📱 Mobile App (Mittel)</span>
+                    <span class="text-emerald-400 font-bold">+300 € · +15 RP</span>
+                </button>
+                <button onclick="startProject('Enterprise Cloud', 800, 1500, 40)" class="w-full bg-slate-800 hover:bg-slate-700 p-2 rounded text-left text-xs transition border border-slate-700 flex justify-between items-center">
+                    <span>☁️ Cloud-Plattform (Groß)</span>
+                    <span class="text-emerald-400 font-bold">+1.500 € · +40 RP</span>
+                </button>
+                <button id="btnEnterprise" onclick="startProject('KI-Plattform', 2500, 6000, 120)" class="w-full bg-slate-800 hover:bg-slate-700 p-2 rounded text-left text-xs transition border border-slate-700 flex justify-between items-center opacity-50" disabled>
+                    <span>🤖 KI-Plattform (Braucht Reputation ≥ 70)</span>
+                    <span class="text-emerald-400 font-bold">+6.000 € · +120 RP</span>
+                </button>
+            </div>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-            <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
-                <p class="text-[10px] text-slate-400 uppercase tracking-wider">Kapital</p>
-                <p id="money" class="text-base md:text-lg font-bold text-emerald-400">100 €</p>
-            </div>
-            <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
-                <p class="text-[10px] text-slate-400 uppercase tracking-wider">Aktives Projekt</p>
-                <p id="projectProgress" class="text-base md:text-lg font-bold text-blue-400">0%</p>
-            </div>
-            <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
-                <p class="text-[10px] text-slate-400 uppercase tracking-wider">Bugs</p>
-                <p id="bugs" class="text-base md:text-lg font-bold text-rose-400">0</p>
-            </div>
-            <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
-                <p class="text-[10px] text-slate-400 uppercase tracking-wider">Server-Auslastung</p>
-                <p id="servers" class="text-base md:text-lg font-bold text-purple-400">2 / 10</p>
-            </div>
-        </div>
-    </header>
 
-    <!-- Hauptbereich -->
-    <main class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6">
+        <button onclick="manualCodeHelp()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 rounded-lg text-xs border border-slate-700">
+            💻 Selbst kurz mithelfen (+2% auf ein Projekt)
+        </button>
+    </section>
 
-        <!-- Spalte 1: Projekt-Management (Kein Spam-Klicken mehr!) -->
-        <section class="bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800 flex flex-col justify-between space-y-4">
-            <div>
-                <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-blue-400">📋 Projekt-Pipeline</h2>
-                <p class="text-[11px] text-slate-400 mb-4">Wähle ein Projekt. Dein Team arbeitet automatisch daran, bis es fertig ist.</p>
+    <!-- Spalte 2: Mitarbeiter -->
+    <section class="bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800 flex flex-col justify-between space-y-4">
+        <div>
+            <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-emerald-400">👥 Personal & Gehälter</h2>
 
-                <!-- Aktuelles Projekt Info -->
-                <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-800 mb-4">
-                    <p id="currentProjectName" class="font-bold text-sm text-slate-200 mb-1">Kein Projekt aktiv</p>
-                    <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden border border-slate-700 mb-2">
-                        <div id="progressBar" class="bg-blue-500 h-full transition-all duration-200" style="width: 0%;"></div>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
+                    <div>
+                        <p class="font-medium text-xs">Praktikant (<span id="internCount">0</span>)</p>
+                        <p class="text-[10px] text-slate-400">75 € · 1 €/s Gehalt | +0.5 Speed, Bug-Risiko</p>
                     </div>
-                    <p id="projectDetails" class="text-[10px] text-slate-400">Wähle unten einen Auftrag aus.</p>
+                    <button onclick="hireStaff('intern')" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded font-medium text-xs transition">Holen</button>
                 </div>
-
-                <!-- Projekt-Auswahl -->
-                <div class="space-y-2">
-                    <button onclick="startProject('Bugfix-Tool', 50, 30)" class="w-full bg-slate-800 hover:bg-slate-700 p-2 rounded text-left text-xs transition border border-slate-700 flex justify-between items-center">
-                        <span>🛠️ Bugfix-Tool (Klein)</span>
-                        <span class="text-emerald-400 font-bold">+60 €</span>
-                    </button>
-                    <button onclick="startProject('Mobile App', 200, 150)" class="w-full bg-slate-800 hover:bg-slate-700 p-2 rounded text-left text-xs transition border border-slate-700 flex justify-between items-center">
-                        <span>📱 Mobile App (Mittel)</span>
-                        <span class="text-emerald-400 font-bold">+300 €</span>
-                    </button>
-                    <button onclick="startProject('Enterprise Cloud', 800, 600)" class="w-full bg-slate-800 hover:bg-slate-700 p-2 rounded text-left text-xs transition border border-slate-700 flex justify-between items-center">
-                        <span>☁️ Cloud-Plattform (Groß)</span>
-                        <span class="text-emerald-400 font-bold">+1.500 €</span>
-                    </button>
+                <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
+                    <div>
+                        <p class="font-medium text-xs">Junior Dev (<span id="devCount">0</span>)</p>
+                        <p class="text-[10px] text-slate-400">250 € · 3 €/s Gehalt | +1.5 Speed</p>
+                    </div>
+                    <button onclick="hireStaff('dev')" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded font-medium text-xs transition">Einstellen</button>
                 </div>
-            </div>
-
-            <!-- Notfall-Button (falls gar nichts geht) -->
-            <button onclick="manualCodeHelp()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 rounded-lg text-xs border border-slate-700">
-                💻 Selbst kurz mithelfen (+1% Projekt)
-            </button>
-        </section>
-
-        <!-- Spalte 2: Mitarbeiter & Team-Upgrades -->
-        <section class="bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800 flex flex-col justify-between space-y-4">
-            <div>
-                <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-emerald-400">👥 Personal & Upgrades</h2>
-                
-                <div class="space-y-3">
-                    <!-- Praktikant -->
-                    <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
-                        <div>
-                            <p class="font-medium text-xs">Praktikant (<span id="internCount">0</span>)</p>
-                            <p class="text-[10px] text-slate-400">75 € | Bringt +1% Speed, +1 Bug</p>
-                        </div>
-                        <button onclick="hireStaff('intern')" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded font-medium text-xs transition">
-                            Holen
-                        </button>
+                <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
+                    <div>
+                        <p class="font-medium text-xs">Senior Dev (<span id="seniorCount">0</span>)</p>
+                        <p class="text-[10px] text-slate-400">800 € · 8 €/s Gehalt | +4 Speed</p>
                     </div>
-
-                    <!-- Junior Dev -->
-                    <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
-                        <div>
-                            <p class="font-medium text-xs">Junior Dev (<span id="devCount">0</span>)</p>
-                            <p class="text-[10px] text-slate-400">250 € | Bringt +3% Speed</p>
-                        </div>
-                        <button onclick="hireStaff('dev')" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded font-medium text-xs transition">
-                            Einstellen
-                        </button>
-                    </div>
-
-                    <!-- Senior Dev -->
-                    <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
-                        <div>
-                            <p class="font-medium text-xs">Senior Dev (<span id="seniorCount">0</span>)</p>
-                            <p class="text-[10px] text-slate-400">800 € | Bringt +10% Speed</p>
-                        </div>
-                        <button onclick="hireStaff('senior')" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded font-medium text-xs transition">
-                            Einstellen
-                        </button>
-                    </div>
+                    <button onclick="hireStaff('senior')" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded font-medium text-xs transition">Einstellen</button>
                 </div>
-            </div>
-
-            <!-- Sysadmin / QA -->
-            <div class="bg-slate-800/40 p-3 rounded-lg border border-slate-800">
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
                     <div>
                         <p class="font-medium text-xs">QA / Bugfixer (<span id="adminCount">0</span>)</p>
-                        <p class="text-[10px] text-slate-400">400 € | Entfernt aktiv Bugs</p>
+                        <p class="text-[10px] text-slate-400">400 € · 5 €/s Gehalt | -2 Bugs/s</p>
                     </div>
-                    <button onclick="hireStaff('admin')" class="bg-rose-600 hover:bg-rose-500 px-3 py-1.5 rounded font-medium text-xs transition">
-                        Einstellen
-                    </button>
+                    <button onclick="hireStaff('admin')" class="bg-rose-600 hover:bg-rose-500 px-3 py-1.5 rounded font-medium text-xs transition">Einstellen</button>
+                </div>
+                <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
+                    <div>
+                        <p class="font-medium text-xs">Sales Manager (<span id="salesCount">0</span>)</p>
+                        <p class="text-[10px] text-slate-400">600 € · 6 €/s Gehalt | +2% Belohnung</p>
+                    </div>
+                    <button onclick="hireStaff('sales')" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded font-medium text-xs transition">Einstellen</button>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Spalte 3: Infrastruktur & Büro -->
-        <section class="bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800 flex flex-col justify-between space-y-4">
+    <!-- Spalte 3: Infrastruktur, Forschung, Prestige -->
+    <section class="bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800 flex flex-col justify-between space-y-4">
+        <div>
+            <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-purple-400">🏢 Infrastruktur</h2>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
+                    <div>
+                        <p class="font-medium text-xs">Server-Rack</p>
+                        <p id="serverCostText" class="text-[10px] text-slate-400">100 € (+5 Kapazität)</p>
+                    </div>
+                    <button onclick="buyServer()" class="bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded font-medium text-xs transition">Mieten</button>
+                </div>
+                <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-800">
+                    <p class="font-medium text-xs mb-1">Büro-Erweiterung</p>
+                    <p id="officeCostText" class="text-[10px] text-slate-400 mb-2">Kostet: 1.000 €</p>
+                    <button onclick="upgradeOffice()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-1.5 rounded font-medium text-xs transition">Umziehen</button>
+                </div>
+            </div>
+
+            <h2 class="text-md font-semibold mb-3 mt-4 border-b border-slate-800 pb-2 text-cyan-400">🔬 Forschung</h2>
+            <div id="researchContainer" class="space-y-2"></div>
+
+            <h2 class="text-md font-semibold mb-3 mt-4 border-b border-slate-800 pb-2 text-fuchsia-400">🚀 Prestige</h2>
+            <p class="text-[10px] text-slate-400 mb-2">Bei Tech-Campus kannst du an die Börse gehen (IPO). Das Spiel resettet, aber du erhältst dauerhaft +10% Belohnung pro IPO.</p>
+            <button id="ipoBtn" onclick="doIPO()" class="w-full bg-fuchsia-700 hover:bg-fuchsia-600 py-1.5 rounded font-medium text-xs transition opacity-50" disabled>
+                📈 IPO durchführen
+            </button>
+        </div>
+
+        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+            <p class="text-[10px] text-slate-500 mb-1">Event-Log</p>
+            <div id="eventLog" class="text-[10px] text-amber-400 italic h-24 overflow-y-auto space-y-1"></div>
+        </div>
+    </section>
+
+</main>
+
+<footer class="w-full max-w-6xl mt-4 flex justify-center gap-3">
+    <button onclick="saveGame()" class="text-[10px] bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded border border-slate-700">💾 Speichern</button>
+    <button onclick="resetGame()" class="text-[10px] bg-slate-800 hover:bg-rose-900 px-3 py-1.5 rounded border border-slate-700">🗑️ Kompletter Reset</button>
+    <p class="text-[10px] text-slate-600 self-center">Auto-Save alle 15s</p>
+</footer>
+
+<script>
+// ===================== STATE =====================
+let state = {
+    money: 100,
+    bugs: 0,
+    servers: 2,
+    maxServers: 10,
+    interns: 0, devs: 0, seniors: 0, admins: 0, sales: 0,
+    officeStage: 1,
+    reputation: 50,
+    researchPoints: 0,
+    prestige: 0,
+    research: { testing: false, cicd: false, autoscale: false, marketing: false, security: false },
+    projects: [] // {name, progress, totalWork, reward, rp}
+};
+
+const officeCosts = [1000, 5000, 20000];
+const officeNames = [
+    "🏢 Garage (Stufe 1)",
+    "💻 WG-Zimmer (Stufe 2)",
+    "🌆 Loft-Büro (Stufe 3)",
+    "🚀 Tech-Campus (Max)"
+];
+const officeSlots = [1, 2, 3, 4]; // parallele Projekt-Slots je Stufe
+
+const salaries = { intern: 1, dev: 3, senior: 8, admin: 5, sales: 6 };
+const hireCosts = { intern: 75, dev: 250, senior: 800, admin: 400, sales: 600 };
+
+const researchDefs = {
+    testing:   { name: "Automatisierte Tests", cost: 50,  desc: "-40% Bug-Entstehung", },
+    cicd:      { name: "CI/CD-Pipeline",        cost: 80,  desc: "+15% Team-Speed" },
+    autoscale: { name: "Cloud-Autoscaling",     cost: 120, desc: "+10 max Server-Kapazität" },
+    marketing: { name: "Marketing-Automation",  cost: 100, desc: "+10% Projekt-Belohnung" },
+    security:  { name: "Security-Hardening",    cost: 150, desc: "Hacker-Events -70% Schadenswirkung" }
+};
+
+let logEntries = [];
+
+function log(msg) {
+    const time = new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    logEntries.unshift(`[${time}] ${msg}`);
+    if (logEntries.length > 30) logEntries.pop();
+    document.getElementById('eventLog').innerHTML = logEntries.map(e => `<div>${e}</div>`).join('');
+}
+
+// ===================== UI UPDATE =====================
+function updateUI() {
+    document.getElementById('money').innerText = Math.floor(state.money).toLocaleString('de-DE') + ' €';
+    document.getElementById('bugs').innerText = Math.floor(state.bugs);
+    document.getElementById('servers').innerText = state.servers + ' / ' + state.maxServers;
+    document.getElementById('internCount').innerText = state.interns;
+    document.getElementById('devCount').innerText = state.devs;
+    document.getElementById('seniorCount').innerText = state.seniors;
+    document.getElementById('adminCount').innerText = state.admins;
+    document.getElementById('salesCount').innerText = state.sales;
+    document.getElementById('reputation').innerText = Math.floor(state.reputation);
+    document.getElementById('researchPoints').innerText = Math.floor(state.researchPoints);
+    document.getElementById('prestigeLevel').innerText = state.prestige;
+
+    const slots = officeSlots[state.officeStage - 1] || 1;
+    document.getElementById('projectProgress').innerText = state.projects.length + '/' + slots;
+
+    const salaryTotal = state.interns*salaries.intern + state.devs*salaries.dev + state.seniors*salaries.senior + state.admins*salaries.admin + state.sales*salaries.sales;
+    document.getElementById('salaryPerSec').innerText = salaryTotal.toLocaleString('de-DE') + ' €';
+
+    document.getElementById('teamSpeed').innerText = getTeamSpeed().toFixed(1) + '/s';
+
+    if (state.officeStage - 1 < officeNames.length) {
+        document.getElementById('officeLevel').innerText = officeNames[state.officeStage - 1];
+    }
+    if (state.officeStage - 1 < officeCosts.length) {
+        document.getElementById('officeCostText').innerText = "Kostet: " + officeCosts[state.officeStage - 1].toLocaleString('de-DE') + " €";
+    } else {
+        document.getElementById('officeCostText').innerText = "Maximum erreicht!";
+    }
+
+    const serverCost = 100 + state.servers * 20;
+    document.getElementById('serverCostText').innerText = serverCost.toLocaleString('de-DE') + " € (+5 Kapazität)";
+
+    const kiBtn = document.getElementById('btnEnterprise');
+    if (state.reputation >= 70) {
+        kiBtn.disabled = false;
+        kiBtn.classList.remove('opacity-50');
+    } else {
+        kiBtn.disabled = true;
+        kiBtn.classList.add('opacity-50');
+    }
+
+    const ipoBtn = document.getElementById('ipoBtn');
+    if (state.officeStage >= 4) {
+        ipoBtn.disabled = false;
+        ipoBtn.classList.remove('opacity-50');
+    } else {
+        ipoBtn.disabled = true;
+        ipoBtn.classList.add('opacity-50');
+    }
+
+    renderProjects();
+    renderResearch();
+}
+
+function renderProjects() {
+    const container = document.getElementById('activeProjectsContainer');
+    if (state.projects.length === 0) {
+        container.innerHTML = '<p class="text-[11px] text-slate-500 italic">Keine aktiven Projekte. Wähle unten einen Auftrag.</p>';
+        return;
+    }
+    container.innerHTML = state.projects.map((p, i) => {
+        const percent = Math.min(100, Math.floor((p.progress / p.totalWork) * 100));
+        return `
+        <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-800">
+            <div class="flex justify-between mb-1">
+                <p class="font-bold text-xs text-slate-200">${p.name}</p>
+                <p class="text-[10px] text-slate-400">${percent}%</p>
+            </div>
+            <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-700">
+                <div class="bg-blue-500 h-full" style="width:${percent}%;"></div>
+            </div>
+            <p class="text-[10px] text-slate-500 mt-1">Lohn: ${p.reward.toLocaleString('de-DE')} € · +${p.rp} RP</p>
+        </div>`;
+    }).join('');
+}
+
+function renderResearch() {
+    const container = document.getElementById('researchContainer');
+    container.innerHTML = Object.entries(researchDefs).map(([key, def]) => {
+        const owned = state.research[key];
+        return `
+        <div class="flex justify-between items-center bg-slate-800/60 p-2 rounded-lg border border-slate-800">
             <div>
-                <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-purple-400">🏢 Infrastruktur</h2>
-                
-                <div class="space-y-3">
-                    <!-- Server mieten -->
-                    <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
-                        <div>
-                            <p class="font-medium text-xs">Server-Rack</p>
-                            <p class="text-[10px] text-slate-400">100 € (+5 Kapazität)</p>
-                        </div>
-                        <button onclick="buyServer()" class="bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded font-medium text-xs transition">
-                            Mieten
-                        </button>
-                    </div>
-
-                    <!-- Büro umziehen -->
-                    <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-800">
-                        <p class="font-medium text-xs mb-1">Büro-Erweiterung</p>
-                        <p id="officeCostText" class="text-[10px] text-slate-400 mb-2">Kostet: 1.000 €</p>
-                        <button onclick="upgradeOffice()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-1.5 rounded font-medium text-xs transition">
-                            Umziehen
-                        </button>
-                    </div>
-                </div>
+                <p class="font-medium text-[11px]">${def.name} ${owned ? '✅' : ''}</p>
+                <p class="text-[9px] text-slate-500">${def.desc} · ${def.cost} RP</p>
             </div>
+            ${owned ? '' : `<button onclick="buyResearch('${key}')" class="bg-cyan-700 hover:bg-cyan-600 px-2 py-1 rounded text-[10px]">Kaufen</button>`}
+        </div>`;
+    }).join('');
+}
 
-            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
-                <p id="eventLog" class="text-[11px] text-amber-400 italic">Status: Bereit für den Aufbau.</p>
-            </div>
-        </section>
+// ===================== CORE MECHANICS =====================
+function getTeamSpeed() {
+    let speed = state.interns * 0.5 + state.devs * 1.5 + state.seniors * 4.0;
+    if (state.research.cicd) speed *= 1.15;
+    return speed;
+}
 
-    </main>
+function getRewardMultiplier() {
+    let mult = 1 + state.prestige * 0.1;
+    if (state.research.marketing) mult *= 1.1;
+    mult *= (1 + state.sales * 0.02);
+    if (state.reputation < 30) mult *= 0.7;
+    else if (state.reputation > 80) mult *= 1.2;
+    return mult;
+}
 
-    <!-- JavaScript Management Logik -->
-    <script>
-        let money = 100;
-        let bugs = 0;
-        let servers = 2;
-        let maxServers = 10;
+function startProject(name, work, reward, rp) {
+    const slots = officeSlots[state.officeStage - 1] || 1;
+    if (state.projects.length >= slots) {
+        alert("Keine freien Projekt-Slots! Erweitere dein Büro.");
+        return;
+    }
+    if (state.projects.length >= state.servers) {
+        alert("Nicht genug Server-Kapazität für ein weiteres Projekt! Miete mehr Server.");
+        return;
+    }
+    state.projects.push({ name, progress: 0, totalWork: work, reward, rp });
+    log("🚀 Neues Projekt gestartet: " + name);
+    updateUI();
+}
 
-        let interns = 0;
-        let devs = 0;
-        let seniors = 0;
-        let admins = 0;
+function manualCodeHelp() {
+    if (state.projects.length > 0) {
+        state.projects[0].progress += state.projects[0].totalWork * 0.02;
+        checkProjectCompletion();
+        updateUI();
+    } else {
+        alert("Wähle zuerst ein Projekt aus der Liste aus!");
+    }
+}
 
-        let activeProject = null;
-        let projectProgress = 0;
-        let projectTotalWork = 0;
-        let projectReward = 0;
+function hireStaff(type) {
+    const cost = hireCosts[type];
+    if (state.money < cost) { alert("Nicht genug Kapital!"); return; }
+    state.money -= cost;
+    if (type === 'intern') { state.interns++; state.bugs += 1; }
+    if (type === 'dev') state.devs++;
+    if (type === 'senior') state.seniors++;
+    if (type === 'admin') state.admins++;
+    if (type === 'sales') state.sales++;
+    log("👤 Neue Einstellung: " + type);
+    updateUI();
+}
 
-        let officeStage = 1;
-        let officeCosts = [1000, 5000, 20000];
-        let officeNames = [
-            "🏢 Garage (Stufe 1)", 
-            "💻 WG-Zimmer (Stufe 2)", 
-            "🌆 Loft-Büro (Stufe 3)", 
-            "🚀 Tech-Campus (Max)"
-        ];
+function buyServer() {
+    const cost = 100 + state.servers * 20;
+    if (state.money < cost) { alert("Nicht genug Kapital!"); return; }
+    state.money -= cost;
+    state.servers += 1;
+    state.maxServers += 5;
+    log("🖥️ Server-Rack gemietet.");
+    updateUI();
+}
 
-        function updateUI() {
-            document.getElementById('money').innerText = money.toLocaleString() + ' €';
-            document.getElementById('bugs').innerText = bugs;
-            document.getElementById('servers').innerText = servers + ' / ' + maxServers;
-            
-            document.getElementById('internCount').innerText = interns;
-            document.getElementById('devCount').innerText = devs;
-            document.getElementById('seniorCount').innerText = seniors;
-            document.getElementById('adminCount').innerText = admins;
+function upgradeOffice() {
+    const index = state.officeStage - 1;
+    if (index >= officeCosts.length) { alert("Höchste Stufe erreicht!"); return; }
+    if (state.money < officeCosts[index]) { alert("Nicht genug Kapital für den Umzug!"); return; }
+    state.money -= officeCosts[index];
+    state.officeStage++;
+    state.maxServers += 20;
+    log("🏢 Büro-Umzug erfolgreich! Neue Stufe: " + officeNames[state.officeStage - 1]);
+    updateUI();
+}
 
-            if (activeProject) {
-                let percent = Math.min(100, Math.floor((projectProgress / projectTotalWork) * 100));
-                document.getElementById('projectProgress').innerText = percent + '%';
-                document.getElementById('progressBar').style.width = percent + '%';
+function buyResearch(key) {
+    const def = researchDefs[key];
+    if (state.research[key]) return;
+    if (state.researchPoints < def.cost) { alert("Nicht genug Forschungspunkte!"); return; }
+    state.researchPoints -= def.cost;
+    state.research[key] = true;
+    if (key === 'autoscale') state.maxServers += 10;
+    log("🔬 Forschung abgeschlossen: " + def.name);
+    updateUI();
+}
+
+function doIPO() {
+    if (state.officeStage < 4) return;
+    if (!confirm("IPO durchführen? Das Spiel resettet komplett, aber du erhältst +10% dauerhafte Belohnung.")) return;
+    const newPrestige = state.prestige + 1;
+    state = {
+        money: 100, bugs: 0, servers: 2, maxServers: 10,
+        interns: 0, devs: 0, seniors: 0, admins: 0, sales: 0,
+        officeStage: 1, reputation: 50, researchPoints: 0,
+        prestige: newPrestige,
+        research: { testing: false, cicd: false, autoscale: false, marketing: false, security: false },
+        projects: []
+    };
+    log("📈 IPO erfolgreich! Prestige-Stufe: " + newPrestige);
+    saveGame();
+    updateUI();
+}
+
+function checkProjectCompletion() {
+    state.projects = state.projects.filter(p => {
+        if (p.progress >= p.totalWork) {
+            let finalReward = p.reward * getRewardMultiplier();
+            let finalRP = p.rp;
+
+            if (state.bugs > 40) {
+                finalReward = Math.floor(finalReward * 0.4);
+                state.reputation = Math.max(0, state.reputation - 15);
+                log("💥 " + p.name + " ist wegen massiver Bugs fast gescheitert! Nur " + Math.floor(finalReward) + " € erhalten.");
+            } else if (state.bugs > 20) {
+                finalReward = Math.floor(finalReward * 0.7);
+                state.reputation = Math.max(0, state.reputation - 5);
+                log("⚠️ " + p.name + " fertig, aber Abzüge wegen Bugs: " + Math.floor(finalReward) + " €");
             } else {
-                document.getElementById('projectProgress').innerText = '0%';
-                document.getElementById('progressBar').style.width = '0%';
+                state.reputation = Math.min(100, state.reputation + 3);
+                log("✅ " + p.name + " erfolgreich abgeschlossen! +" + Math.floor(finalReward) + " € · +" + finalRP + " RP");
             }
-
-            if (officeStage - 1 < officeNames.length) {
-                document.getElementById('officeLevel').innerText = officeNames[officeStage - 1];
-            }
-            if (officeStage - 1 < officeCosts.length) {
-                document.getElementById('officeCostText').innerText = "Kostet: " + officeCosts[officeStage - 1].toLocaleString() + " €";
-            } else {
-                document.getElementById('officeCostText').innerText = "Maximum erreicht!";
-            }
+            state.money += finalReward;
+            state.researchPoints += finalRP;
+            return false;
         }
+        return true;
+    });
+}
 
-        function startProject(name, work, reward) {
-            activeProject = name;
-            projectTotalWork = work;
-            projectProgress = 0;
-            projectReward = reward;
-            document.getElementById('currentProjectName').innerText = "Projekt: " + name;
-            document.getElementById('projectDetails').innerText = "Ziel: " + work + " Einheiten Code | Lohn: " + reward + " €";
-            document.getElementById('eventLog').innerText = "🚀 Arbeite an: " + name;
-            updateUI();
+// ===================== RANDOM EVENTS =====================
+function triggerRandomEvent() {
+    const roll = Math.random();
+    if (roll < 0.04) {
+        let hackFactor = state.research.security ? 0.3 : 1.0;
+        let loss = Math.floor(state.money * 0.15 * hackFactor);
+        state.money = Math.max(0, state.money - loss);
+        log("🔓 Hacker-Angriff! Verlust: " + loss + " € " + (state.research.security ? "(durch Security-Hardening reduziert)" : ""));
+    } else if (roll < 0.08) {
+        state.bugs += Math.floor(5 + Math.random() * 10);
+        log("🐛 Server-Crash! Zusätzliche Bugs entstanden.");
+    } else if (roll < 0.12) {
+        const bonus = Math.floor(50 + Math.random() * 200);
+        state.money += bonus;
+        log("💰 Investoren-Bonus erhalten: +" + bonus + " €");
+    } else if (roll < 0.15) {
+        state.reputation = Math.min(100, state.reputation + 5);
+        log("📣 Viraler Erfolg! Reputation +5");
+    }
+}
+
+// ===================== GAME LOOP =====================
+setInterval(function() {
+    const totalSpeed = getTeamSpeed();
+    const bugRateFactor = state.research.testing ? 0.6 : 1.0;
+
+    if (state.projects.length > 0 && totalSpeed > 0) {
+        const perProjectSpeed = totalSpeed / state.projects.length;
+        state.projects.forEach(p => p.progress += perProjectSpeed);
+
+        if (state.interns > 0 && Math.random() < 0.3) {
+            state.bugs += state.interns * bugRateFactor;
         }
+        checkProjectCompletion();
+    }
 
-        function manualCodeHelp() {
-            if (activeProject) {
-                projectProgress += projectTotalWork * 0.02; // 2% Fortschritt per Klick
-                checkProjectCompletion();
-                updateUI();
-            } else {
-                alert("Wähle zuerst ein Projekt aus der Liste aus!");
-            }
-        }
+    if (state.admins > 0) {
+        state.bugs -= state.admins * 2;
+        if (state.bugs < 0) state.bugs = 0;
+    }
 
-        function hireStaff(type) {
-            if (type === 'intern' && money >= 75) {
-                money -= 75; interns++; bugs += 1;
-            } else if (type === 'dev' && money >= 250) {
-                money -= 250; devs++;
-            } else if (type === 'senior' && money >= 800) {
-                money -= 800; seniors++;
-            } else if (type === 'admin' && money >= 400) {
-                money -= 400; admins++;
-            } else {
-                alert("Nicht genug Kapital!");
-                return;
-            }
-            updateUI();
-        }
+    const salaryTotal = state.interns*salaries.intern + state.devs*salaries.dev + state.seniors*salaries.senior + state.admins*salaries.admin + state.sales*salaries.sales;
+    state.money -= salaryTotal;
 
-        function buyServer() {
-            if (money >= 100) {
-                money -= 100;
-                servers += 1;
-                maxServers += 5;
-                updateUI();
-            } else {
-                alert("Nicht genug Kapital!");
-            }
-        }
+    if (state.money < 0) {
+        state.money = 0;
+        if (state.interns > 0) { state.interns--; log("😢 Praktikant gekündigt (Insolvenzgefahr)."); }
+        else if (state.devs > 0) { state.devs--; log("😢 Junior Dev gekündigt (Insolvenzgefahr)."); }
+        else if (state.sales > 0) { state.sales--; log("😢 Sales Manager gekündigt (Insolvenzgefahr)."); }
+        else if (state.admins > 0) { state.admins--; log("😢 QA gekündigt (Insolvenzgefahr)."); }
+        else if (state.seniors > 0) { state.seniors--; log("😢 Senior Dev gekündigt (Insolvenzgefahr)."); }
+    }
 
-        function upgradeOffice() {
-            let index = officeStage - 1;
-            if (index < officeCosts.length) {
-                if (money >= officeCosts[index]) {
-                    money -= officeCosts[index];
-                    officeStage++;
-                    maxServers += 20;
-                    updateUI();
-                    alert("Glückwunsch zum Umzug!");
-                } else {
-                    alert("Nicht genug Kapital für den Umzug!");
-                }
-            } else {
-                alert("Höchste Stufe erreicht!");
-            }
-        }
+    if (Math.random() < 0.05) triggerRandomEvent();
 
-        function checkProjectCompletion() {
-            if (activeProject && projectProgress >= projectTotalWork) {
-                // Bug-Abzug berechnen
-                let finalReward = projectReward;
-                if (bugs > 20) {
-                    finalReward = Math.floor(finalReward * 0.7);
-                    document.getElementById('eventLog').innerText = "⚠️ Projekt fertig, aber wegen Bugs Abzüge erhalten!";
-                } else {
-                    document.getElementById('eventLog').innerText = "✅ " + activeProject + " erfolgreich abgeschlossen! +" + finalReward + " €";
-                }
-                money += finalReward;
-                activeProject = null;
-                document.getElementById('currentProjectName').innerText = "Kein Projekt aktiv";
-                document.getElementById('projectDetails').innerText = "Wähle unten einen neuen Auftrag aus.";
-            }
-        }
+    updateUI();
+}, 1000);
 
-        // Game Loop (Das Team arbeitet automatisch im Hintergrund)
-        setInterval(function() {
-            // Gesamte Arbeitskraft der Mitarbeiter berechnen
-            let totalSpeed = (interns * 0.5) + (devs * 1.5) + (seniors * 4.0);
+// ===================== SAVE / LOAD =====================
+function saveGame() {
+    localStorage.setItem('techImperiumSave', JSON.stringify(state));
+    log("💾 Spielstand gespeichert.");
+}
 
-            if (activeProject && totalSpeed > 0) {
-                projectProgress += totalSpeed;
-                
-                // Praktikanten machen manchmal Bugs
-                if (interns > 0 && Math.random() < 0.3) {
-                    bugs += interns;
-                }
+function loadGame() {
+    const saved = localStorage.getItem('techImperiumSave');
+    if (saved) {
+        state = Object.assign(state, JSON.parse(saved));
+        log("📂 Spielstand geladen.");
+    } else {
+        log("Status: Bereit für den Aufbau.");
+    }
+}
 
-                checkProjectCompletion();
-            }
+function resetGame() {
+    if (!confirm("Wirklich alles zurücksetzen? Dieser Schritt kann nicht rückgängig gemacht werden.")) return;
+    localStorage.removeItem('techImperiumSave');
+    location.reload();
+}
 
-            // Admins fixen Bugs
-            if (admins > 0) {
-                bugs -= admins * 2;
-                if (bugs < 0) bugs = 0;
-            }
+setInterval(saveGame, 15000);
 
-            updateUI();
-        }, 1000);
-    </script>
+loadGame();
+updateUI();
+</script>
 </body>
 </html>
