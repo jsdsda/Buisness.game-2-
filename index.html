@@ -292,7 +292,6 @@ body { -webkit-tap-highlight-color: transparent; }
 
         <h2 class="text-sm font-semibold text-amber-400 pt-3">📜 Event-Log</h2>
         <div id="eventLog" class="text-[10px] text-amber-400/80 italic h-40 overflow-y-auto space-y-1 bg-slate-900 border border-slate-800 rounded-xl p-3"></div>
-
         <div class="flex gap-2 pt-2">
             <button onclick="saveGame()" class="flex-1 text-[10px] bg-slate-900 hover:bg-slate-800 px-3 py-2 rounded-lg border border-slate-800">💾 Speichern</button>
             <button onclick="resetGame()" class="flex-1 text-[10px] bg-slate-900 hover:bg-rose-950 px-3 py-2 rounded-lg border border-slate-800">🗑️ Reset</button>
@@ -358,7 +357,10 @@ let state = {
         { key: "sf", name: "San Francisco", icon: "🇺🇸", cost: 20000, bonus: "speed", opened: false }
     ],
     activeSeason: null,
-    seasonEndsAt: 0
+    seasonEndsAt: 0,
+    // NEU: Event-Cooldowns um Spam zu verhindern
+    lastRandomEventTime: 0,
+    lastDecisionCardTime: 0
 };
 
 const officeCosts = [1000, 5000, 20000];
@@ -418,7 +420,7 @@ const productDefs = [
 ];
 
 const seasonEvents = [
-    { key: "hackathon", name: "🏆 Hackathon-Woche", desc: "Alle Timing-Treffer geben doppelt Fortschritt!", duration: 180 },
+    { key: "hackathon", name: "🏆 Hackathon-Woche", desc: "Alle Timing-Treffer geben doppelten Fortschritt!", duration: 180 },
     { key: "blackfriday", name: "🛍️ Black Friday", desc: "Alle Marktangebote -30% billiger einzukaufen, Belohnung gleich", duration: 180 },
     { key: "investorsday", name: "💼 Investoren-Tag", desc: "Aktienkurse schwanken doppelt so stark — Chance & Risiko!", duration: 180 }
 ];
@@ -462,7 +464,7 @@ function toast(msg, type = "info") {
     el.className = `toast ${colors[type]} border rounded-lg px-3 py-2 text-xs shadow-lg`;
     el.innerText = msg;
     document.getElementById('toastContainer').appendChild(el);
-    setTimeout(() => { el.classList.add('hide'); setTimeout(() => el.remove(), 300); }, 2500);
+    setTimeout(() => { el.classList.add('hide'); setTimeout(() => el.remove(), 300); }, 3000);
 }
 function log(msg) {
     const time = new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
@@ -611,6 +613,7 @@ function hitTiming() {
     updateUI();
 }
 
+// ===================== SALES & MANAGER =====================
 function doSalesPitch() {
     if (state.salesCooldown > 0) { toast("Noch " + state.salesCooldown + "s Cooldown!", "warn"); return; }
     const roll = Math.random() + state.skills.silverTongue * 0.05;
@@ -812,7 +815,7 @@ function renderAcquisitions() {
 // ===================== SEASON EVENTS =====================
 function maybeStartSeason() {
     if (state.activeSeason) return;
-    if (Math.random() < 0.02) {
+    if (Math.random() < 0.005) { // 0.5% pro Sekunde ≈ alle 3-4 Min
         const ev = seasonEvents[Math.floor(Math.random() * seasonEvents.length)];
         state.activeSeason = ev.key;
         state.seasonEndsAt = Date.now() + ev.duration * 1000;
@@ -907,6 +910,7 @@ function claimDailyGoal() {
     updateUI();
 }
 
+// ===================== DECISION CARDS (Reduzierte Frequenz + Cooldown) =====================
 const decisionCards = [
     { icon: "💼", title: "Risikoreicher Großkunde", text: "Ein Kunde bietet doppeltes Honorar für dein aktuelles Projekt, verlangt aber engere Deadlines (mehr Bug-Risiko).",
       yes: () => { if (state.projects.length > 0) { state.projects[0].reward *= 2; state.bugs += 8; toast("💼 Deal! Belohnung verdoppelt, +8 Bugs", "warn"); } else toast("Kein aktives Projekt.", "info"); },
@@ -931,8 +935,14 @@ const decisionCards = [
       no: () => toast("Feature verschoben.", "info") }
 ];
 
+// NEU: Cooldown-Tracking für Decision Cards
 function maybeTriggerDecisionCard() {
-    if (Math.random() > 0.12) return;
+    const now = Date.now();
+    // Mindestens 60 Sekunden zwischen Decision Cards (war vorher ~8 Sek im Schnitt)
+    if (now - state.lastDecisionCardTime < 60000) return;
+    // Basis-Chance: 2% pro Sekunde (≈ alle 50 Sek im Schnitt, aber mit Cooldown mind. 60s)
+    if (Math.random() > 0.02) return;
+    
     const card = decisionCards[Math.floor(Math.random() * decisionCards.length)];
     document.getElementById('decisionIcon').innerText = card.icon;
     document.getElementById('decisionTitle').innerText = card.title;
@@ -940,6 +950,8 @@ function maybeTriggerDecisionCard() {
     document.getElementById('decisionModal').classList.remove('hidden');
     document.getElementById('decisionYesBtn').onclick = () => { card.yes(); document.getElementById('decisionModal').classList.add('hidden'); updateUI(); };
     document.getElementById('decisionNoBtn').onclick = () => { card.no(); document.getElementById('decisionModal').classList.add('hidden'); updateUI(); };
+    
+    state.lastDecisionCardTime = now;
 }
 
 // ===================== MARKET =====================
@@ -981,6 +993,7 @@ function rotateMarketTrend() {
 }
 setInterval(rotateMarketTrend, 90000);
 
+// ===================== COMPETITORS =====================
 function simulateCompetitors() {
     state.competitors.forEach(c => {
         if (c.acquired) return;
@@ -1326,7 +1339,9 @@ function confirmIPO(focus) {
             { key: "zurich", name: "Zürich", icon: "🇨🇭", cost: 8000, bonus: "reward", opened: false },
             { key: "sf", name: "San Francisco", icon: "🇺🇸", cost: 20000, bonus: "speed", opened: false }
         ],
-        activeSeason: null, seasonEndsAt: 0
+        activeSeason: null, seasonEndsAt: 0,
+        lastRandomEventTime: 0,
+        lastDecisionCardTime: 0
     };
     log("📈 IPO erfolgreich! Prestige-Stufe: " + newPrestige + " · Fokus: " + focus);
     toast("📈 IPO erfolgreich! Fokus: " + focus, "success");
@@ -1396,32 +1411,42 @@ function checkProjectCompletion() {
     });
 }
 
+// ===================== RANDOM EVENTS (Reduzierte Frequenz + Cooldown) =====================
 function triggerRandomEvent() {
+    const now = Date.now();
+    // Mindestens 45 Sekunden zwischen Random Events (war vorher alle ~20 Sek im Schnitt)
+    if (now - state.lastRandomEventTime < 45000) return;
+    // Basis-Chance: 1.5% pro Sekunde (≈ alle 60-70 Sek im Schnitt)
+    if (Math.random() > 0.015) return;
+
     const luckBonus = state.skills.luckyStar * 0.05;
     const roll = Math.random() - luckBonus;
     const bugResistFactor = 1 - state.permanentBoosts.bugResist * 0.05;
-    if (roll < 0.04) {
+    
+    if (roll < 0.03) {
         let hackFactor = state.research.security ? 0.3 : 1.0;
         let loss = Math.floor(state.money * 0.15 * hackFactor);
         state.money = Math.max(0, state.money - loss);
         log("🔓 Hacker-Angriff! Verlust: " + loss + " €");
         toast("🔓 Hacker-Angriff! -" + loss + " €", "danger");
         screenShake();
-    } else if (roll < 0.08) {
+    } else if (roll < 0.06) {
         const newBugs = Math.floor((5 + Math.random() * 10) * bugResistFactor);
         state.bugs += newBugs;
         log("🐛 Server-Crash! +" + newBugs + " Bugs.");
         toast("🐛 Server-Crash! +" + newBugs + " Bugs", "warn");
-    } else if (roll < 0.12) {
+    } else if (roll < 0.09) {
         const bonus = Math.floor(50 + Math.random() * 200);
         state.money += bonus;
         log("💰 Investoren-Bonus: +" + bonus + " €");
         toast("💰 Investoren-Bonus: +" + bonus + " €", "success");
-    } else if (roll < 0.15) {
+    } else if (roll < 0.12) {
         state.reputation = Math.min(100, state.reputation + 5);
         log("📣 Viraler Erfolg! Reputation +5");
         toast("📣 Viraler Erfolg! Reputation +5", "success");
     }
+    
+    state.lastRandomEventTime = now;
 }
 
 // ===================== GAME LOOP =====================
@@ -1484,7 +1509,8 @@ setInterval(function() {
     maybeStartSeason();
     checkSeasonEnd();
 
-    if (Math.random() < 0.05) triggerRandomEvent();
+    // Random Events & Decision Cards jetzt mit Cooldowns
+    triggerRandomEvent();
     maybeTriggerDecisionCard();
 
     updateUI();
@@ -1497,6 +1523,9 @@ function loadGame() {
     const saved = localStorage.getItem('techImperiumSave');
     if (saved) {
         const parsed = JSON.parse(saved);
+        // Default-Werte für neue State-Felder setzen falls altes Save
+        parsed.lastRandomEventTime = parsed.lastRandomEventTime || 0;
+        parsed.lastDecisionCardTime = parsed.lastDecisionCardTime || 0;
         state = Object.assign(state, parsed);
         log("📂 Spielstand geladen.");
     } else {
