@@ -5,8 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tech-Imperium Tycoon - Management Edition</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<style>
+@keyframes pulseWarn { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+.warn-blink { animation: pulseWarn 1s infinite; }
+</style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col items-center p-4 md:p-6">
+
+<!-- ONBOARDING BANNER -->
+<div id="onboardingBanner" class="w-full max-w-6xl bg-blue-950 border border-blue-700 rounded-xl p-4 mb-4 text-sm">
+    <p class="font-bold text-blue-300 mb-1">👋 So spielst du Tech-Imperium Tycoon:</p>
+    <ol class="list-decimal list-inside text-blue-200 text-xs space-y-0.5">
+        <li>Klicke unten links auf ein <b>Projekt</b> (z. B. "Bugfix-Tool") um Arbeit zu starten.</li>
+        <li>Stelle rechts <b>Mitarbeiter</b> ein – sie arbeiten automatisch am Projekt, auch ohne dass du klickst.</li>
+        <li>Ist das Projekt bei 100%, bekommst du automatisch <b>Geld</b> ausgezahlt. Starte dann das nächste Projekt!</li>
+    </ol>
+    <button onclick="dismissOnboarding()" class="mt-2 text-[10px] bg-blue-800 hover:bg-blue-700 px-2 py-1 rounded">Verstanden, ausblenden</button>
+</div>
+
+<!-- NEXT STEP HINT -->
+<div id="nextStepBox" class="w-full max-w-6xl bg-amber-950/60 border border-amber-700 rounded-xl p-3 mb-4 text-center">
+    <p id="nextStepText" class="text-amber-300 text-sm font-medium">💡 Starte dein erstes Projekt unten links!</p>
+</div>
 
 <!-- Header / Dashboard -->
 <header class="w-full max-w-6xl bg-slate-900 p-5 rounded-xl shadow-xl mb-6 flex flex-col md:flex-row justify-between items-center border border-slate-800 gap-4">
@@ -43,21 +63,28 @@
     </div>
 </header>
 
+<!-- GELDVERDIENST ERKLÄRUNG -->
+<div class="w-full max-w-6xl bg-slate-900/60 border border-slate-800 rounded-xl p-3 mb-6 text-[11px] text-slate-400 flex flex-col md:flex-row gap-3 justify-around">
+    <p>💰 <b class="text-emerald-400">Geld verdienen:</b> Projekt abschließen = automatische Auszahlung</p>
+    <p>⚡ <b class="text-cyan-400">Schneller fertig:</b> Mehr/bessere Mitarbeiter = höherer Team-Speed</p>
+    <p>🐛 <b class="text-rose-400">Bugs vermeiden:</b> Über 20 Bugs = weniger Lohn, über 40 = fast alles verloren</p>
+</div>
+
 <!-- Hauptbereich -->
 <main class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-4 gap-6">
 
     <!-- Spalte 1: Projekt-Management -->
     <section class="bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800 flex flex-col justify-between space-y-4 md:col-span-2">
         <div>
-            <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-blue-400">📋 Projekt-Pipeline</h2>
-            <p class="text-[11px] text-slate-400 mb-4">Wähle Projekte. Slots hängen von Büro-Stufe & Servern ab. Jedes Projekt braucht 1 Server-Kapazität.</p>
+            <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-blue-400">📋 Schritt 1: Projekt starten</h2>
+            <p class="text-[11px] text-slate-400 mb-4">Klicke auf einen Auftrag. Dein Team arbeitet automatisch daran — du musst nichts klicken. Slots hängen von Büro-Stufe & Servern ab.</p>
 
             <div id="activeProjectsContainer" class="space-y-3 mb-4"></div>
 
             <div class="space-y-2">
-                <p class="text-[10px] text-slate-500 uppercase mb-1">Verfügbare Aufträge (Reputation schaltet größere frei)</p>
+                <p class="text-[10px] text-slate-500 uppercase mb-1">Verfügbare Aufträge (größere Aufträge brauchen mehr Reputation)</p>
                 <button onclick="startProject('Bugfix-Tool', 50, 60, 5)" class="w-full bg-slate-800 hover:bg-slate-700 p-2 rounded text-left text-xs transition border border-slate-700 flex justify-between items-center">
-                    <span>🛠️ Bugfix-Tool (Klein)</span>
+                    <span>🛠️ Bugfix-Tool (Klein, schnell fertig)</span>
                     <span class="text-emerald-400 font-bold">+60 € · +5 RP</span>
                 </button>
                 <button onclick="startProject('Mobile App', 200, 300, 15)" class="w-full bg-slate-800 hover:bg-slate-700 p-2 rounded text-left text-xs transition border border-slate-700 flex justify-between items-center">
@@ -65,31 +92,32 @@
                     <span class="text-emerald-400 font-bold">+300 € · +15 RP</span>
                 </button>
                 <button onclick="startProject('Enterprise Cloud', 800, 1500, 40)" class="w-full bg-slate-800 hover:bg-slate-700 p-2 rounded text-left text-xs transition border border-slate-700 flex justify-between items-center">
-                    <span>☁️ Cloud-Plattform (Groß)</span>
+                    <span>☁️ Cloud-Plattform (Groß, dauert länger)</span>
                     <span class="text-emerald-400 font-bold">+1.500 € · +40 RP</span>
                 </button>
                 <button id="btnEnterprise" onclick="startProject('KI-Plattform', 2500, 6000, 120)" class="w-full bg-slate-800 hover:bg-slate-700 p-2 rounded text-left text-xs transition border border-slate-700 flex justify-between items-center opacity-50" disabled>
-                    <span>🤖 KI-Plattform (Braucht Reputation ≥ 70)</span>
+                    <span>🤖 KI-Plattform (braucht Reputation ≥ 70)</span>
                     <span class="text-emerald-400 font-bold">+6.000 € · +120 RP</span>
                 </button>
             </div>
         </div>
 
         <button onclick="manualCodeHelp()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 rounded-lg text-xs border border-slate-700">
-            💻 Selbst kurz mithelfen (+2% auf ein Projekt)
+            💻 Selbst kurz mithelfen (sofort +2% Fortschritt aufs erste Projekt)
         </button>
     </section>
 
     <!-- Spalte 2: Mitarbeiter -->
     <section class="bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800 flex flex-col justify-between space-y-4">
         <div>
-            <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-emerald-400">👥 Personal & Gehälter</h2>
+            <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-emerald-400">👥 Schritt 2: Personal einstellen</h2>
+            <p class="text-[11px] text-slate-400 mb-3">Mitarbeiter erhöhen deinen Team-Speed — dadurch werden Projekte schneller fertig. Achtung: sie kosten laufend Gehalt pro Sekunde!</p>
 
             <div class="space-y-3">
                 <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
                     <div>
                         <p class="font-medium text-xs">Praktikant (<span id="internCount">0</span>)</p>
-                        <p class="text-[10px] text-slate-400">75 € · 1 €/s Gehalt | +0.5 Speed, Bug-Risiko</p>
+                        <p class="text-[10px] text-slate-400">75 € · 1 €/s Gehalt | +0.5 Speed, macht manchmal Bugs</p>
                     </div>
                     <button onclick="hireStaff('intern')" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded font-medium text-xs transition">Holen</button>
                 </div>
@@ -110,14 +138,14 @@
                 <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
                     <div>
                         <p class="font-medium text-xs">QA / Bugfixer (<span id="adminCount">0</span>)</p>
-                        <p class="text-[10px] text-slate-400">400 € · 5 €/s Gehalt | -2 Bugs/s</p>
+                        <p class="text-[10px] text-slate-400">400 € · 5 €/s Gehalt | entfernt 2 Bugs/s automatisch</p>
                     </div>
                     <button onclick="hireStaff('admin')" class="bg-rose-600 hover:bg-rose-500 px-3 py-1.5 rounded font-medium text-xs transition">Einstellen</button>
                 </div>
                 <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
                     <div>
                         <p class="font-medium text-xs">Sales Manager (<span id="salesCount">0</span>)</p>
-                        <p class="text-[10px] text-slate-400">600 € · 6 €/s Gehalt | +2% Belohnung</p>
+                        <p class="text-[10px] text-slate-400">600 € · 6 €/s Gehalt | +2% Belohnung pro Projekt</p>
                     </div>
                     <button onclick="hireStaff('sales')" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded font-medium text-xs transition">Einstellen</button>
                 </div>
@@ -128,7 +156,8 @@
     <!-- Spalte 3: Infrastruktur, Forschung, Prestige -->
     <section class="bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800 flex flex-col justify-between space-y-4">
         <div>
-            <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-purple-400">🏢 Infrastruktur</h2>
+            <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-purple-400">🏢 Schritt 3: Wachsen</h2>
+            <p class="text-[11px] text-slate-400 mb-3">Mehr Server = mehr parallele Projekte möglich. Büro-Erweiterung = mehr Projekt-Slots gleichzeitig.</p>
             <div class="space-y-3">
                 <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
                     <div>
@@ -144,10 +173,11 @@
                 </div>
             </div>
 
-            <h2 class="text-md font-semibold mb-3 mt-4 border-b border-slate-800 pb-2 text-cyan-400">🔬 Forschung</h2>
+            <h2 class="text-md font-semibold mb-3 mt-4 border-b border-slate-800 pb-2 text-cyan-400">🔬 Forschung (optional)</h2>
+            <p class="text-[10px] text-slate-500 mb-2">Sammle Forschungspunkte (RP) durch abgeschlossene Projekte.</p>
             <div id="researchContainer" class="space-y-2"></div>
 
-            <h2 class="text-md font-semibold mb-3 mt-4 border-b border-slate-800 pb-2 text-fuchsia-400">🚀 Prestige</h2>
+            <h2 class="text-md font-semibold mb-3 mt-4 border-b border-slate-800 pb-2 text-fuchsia-400">🚀 Prestige (Spätspiel)</h2>
             <p class="text-[10px] text-slate-400 mb-2">Bei Tech-Campus kannst du an die Börse gehen (IPO). Das Spiel resettet, aber du erhältst dauerhaft +10% Belohnung pro IPO.</p>
             <button id="ipoBtn" onclick="doIPO()" class="w-full bg-fuchsia-700 hover:bg-fuchsia-600 py-1.5 rounded font-medium text-xs transition opacity-50" disabled>
                 📈 IPO durchführen
@@ -181,7 +211,9 @@ let state = {
     researchPoints: 0,
     prestige: 0,
     research: { testing: false, cicd: false, autoscale: false, marketing: false, security: false },
-    projects: [] // {name, progress, totalWork, reward, rp}
+    projects: [], // {name, progress, totalWork, reward, rp}
+    hasCompletedFirstProject: false,
+    onboardingDismissed: false
 };
 
 const officeCosts = [1000, 5000, 20000];
@@ -191,13 +223,13 @@ const officeNames = [
     "🌆 Loft-Büro (Stufe 3)",
     "🚀 Tech-Campus (Max)"
 ];
-const officeSlots = [1, 2, 3, 4]; // parallele Projekt-Slots je Stufe
+const officeSlots = [1, 2, 3, 4];
 
 const salaries = { intern: 1, dev: 3, senior: 8, admin: 5, sales: 6 };
 const hireCosts = { intern: 75, dev: 250, senior: 800, admin: 400, sales: 600 };
 
 const researchDefs = {
-    testing:   { name: "Automatisierte Tests", cost: 50,  desc: "-40% Bug-Entstehung", },
+    testing:   { name: "Automatisierte Tests", cost: 50,  desc: "-40% Bug-Entstehung" },
     cicd:      { name: "CI/CD-Pipeline",        cost: 80,  desc: "+15% Team-Speed" },
     autoscale: { name: "Cloud-Autoscaling",     cost: 120, desc: "+10 max Server-Kapazität" },
     marketing: { name: "Marketing-Automation",  cost: 100, desc: "+10% Projekt-Belohnung" },
@@ -213,10 +245,51 @@ function log(msg) {
     document.getElementById('eventLog').innerHTML = logEntries.map(e => `<div>${e}</div>`).join('');
 }
 
+function dismissOnboarding() {
+    state.onboardingDismissed = true;
+    document.getElementById('onboardingBanner').classList.add('hidden');
+    saveGame();
+}
+
+// ===================== NEXT STEP HINT LOGIC =====================
+function updateNextStepHint() {
+    const box = document.getElementById('nextStepBox');
+    const text = document.getElementById('nextStepText');
+    const slots = officeSlots[state.officeStage - 1] || 1;
+
+    let hint = "";
+    if (state.projects.length === 0) {
+        hint = "💡 Du hast kein aktives Projekt — klicke unten links auf einen Auftrag, z.B. 'Bugfix-Tool'!";
+    } else if (state.bugs > 40) {
+        hint = "🚨 Kritisch viele Bugs! Projekt-Belohnung fast komplett verloren — stelle sofort QA-Mitarbeiter ein!";
+    } else if (state.bugs > 20) {
+        hint = "⚠️ Viele Bugs (" + Math.floor(state.bugs) + ") — stelle einen QA/Bugfixer ein, sonst gibt's weniger Lohn!";
+    } else if (state.money < 50 && (state.interns + state.devs + state.seniors + state.admins + state.sales) > 0) {
+        hint = "💸 Kapital wird knapp! Warte auf Projekt-Abschluss, sonst musst du Personal entlassen.";
+    } else if (getTeamSpeed() === 0 && state.projects.length > 0) {
+        hint = "🐢 Niemand arbeitet am Projekt! Stelle mindestens einen Praktikant oder Dev ein.";
+    } else if (state.projects.length < slots && state.servers > state.projects.length) {
+        hint = "✅ Läuft gut! Du hast noch freie Slots — starte ein weiteres Projekt parallel.";
+    } else if (state.money >= (officeCosts[state.officeStage-1] || Infinity)) {
+        hint = "🏢 Du hast genug Kapital für eine Büro-Erweiterung — mehr Projekt-Slots warten!";
+    } else {
+        hint = "✅ Alles läuft — dein Team arbeitet automatisch. Lehn dich zurück oder stelle mehr Personal ein.";
+    }
+    text.innerText = hint;
+}
+
 // ===================== UI UPDATE =====================
 function updateUI() {
-    document.getElementById('money').innerText = Math.floor(state.money).toLocaleString('de-DE') + ' €';
-    document.getElementById('bugs').innerText = Math.floor(state.bugs);
+    const moneyEl = document.getElementById('money');
+    moneyEl.innerText = Math.floor(state.money).toLocaleString('de-DE') + ' €';
+    moneyEl.classList.toggle('warn-blink', state.money < 30);
+    moneyEl.classList.toggle('text-rose-500', state.money < 30);
+    moneyEl.classList.toggle('text-emerald-400', state.money >= 30);
+
+    const bugsEl = document.getElementById('bugs');
+    bugsEl.innerText = Math.floor(state.bugs);
+    bugsEl.classList.toggle('warn-blink', state.bugs > 40);
+
     document.getElementById('servers').innerText = state.servers + ' / ' + state.maxServers;
     document.getElementById('internCount').innerText = state.interns;
     document.getElementById('devCount').innerText = state.devs;
@@ -265,8 +338,13 @@ function updateUI() {
         ipoBtn.classList.add('opacity-50');
     }
 
+    if (state.onboardingDismissed || state.hasCompletedFirstProject) {
+        document.getElementById('onboardingBanner').classList.add('hidden');
+    }
+
     renderProjects();
     renderResearch();
+    updateNextStepHint();
 }
 
 function renderProjects() {
@@ -275,8 +353,17 @@ function renderProjects() {
         container.innerHTML = '<p class="text-[11px] text-slate-500 italic">Keine aktiven Projekte. Wähle unten einen Auftrag.</p>';
         return;
     }
-    container.innerHTML = state.projects.map((p, i) => {
+    const speed = getTeamSpeed();
+    const perProjectSpeed = state.projects.length > 0 ? speed / state.projects.length : 0;
+
+    container.innerHTML = state.projects.map((p) => {
         const percent = Math.min(100, Math.floor((p.progress / p.totalWork) * 100));
+        const remaining = p.totalWork - p.progress;
+        let etaText = "wartet auf Personal...";
+        if (perProjectSpeed > 0) {
+            const etaSec = Math.ceil(remaining / perProjectSpeed);
+            etaText = "Fertig in ca. " + etaSec + "s";
+        }
         return `
         <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-800">
             <div class="flex justify-between mb-1">
@@ -284,9 +371,9 @@ function renderProjects() {
                 <p class="text-[10px] text-slate-400">${percent}%</p>
             </div>
             <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-700">
-                <div class="bg-blue-500 h-full" style="width:${percent}%;"></div>
+                <div class="bg-blue-500 h-full transition-all duration-500" style="width:${percent}%;"></div>
             </div>
-            <p class="text-[10px] text-slate-500 mt-1">Lohn: ${p.reward.toLocaleString('de-DE')} € · +${p.rp} RP</p>
+            <p class="text-[10px] text-slate-500 mt-1">Lohn: ${p.reward.toLocaleString('de-DE')} € · +${p.rp} RP · ${etaText}</p>
         </div>`;
     }).join('');
 }
@@ -349,7 +436,7 @@ function manualCodeHelp() {
 
 function hireStaff(type) {
     const cost = hireCosts[type];
-    if (state.money < cost) { alert("Nicht genug Kapital!"); return; }
+    if (state.money < cost) { alert("Nicht genug Kapital! Du brauchst " + cost + " €, hast aber nur " + Math.floor(state.money) + " €."); return; }
     state.money -= cost;
     if (type === 'intern') { state.interns++; state.bugs += 1; }
     if (type === 'dev') state.devs++;
@@ -362,7 +449,7 @@ function hireStaff(type) {
 
 function buyServer() {
     const cost = 100 + state.servers * 20;
-    if (state.money < cost) { alert("Nicht genug Kapital!"); return; }
+    if (state.money < cost) { alert("Nicht genug Kapital! Du brauchst " + cost + " €."); return; }
     state.money -= cost;
     state.servers += 1;
     state.maxServers += 5;
@@ -373,7 +460,7 @@ function buyServer() {
 function upgradeOffice() {
     const index = state.officeStage - 1;
     if (index >= officeCosts.length) { alert("Höchste Stufe erreicht!"); return; }
-    if (state.money < officeCosts[index]) { alert("Nicht genug Kapital für den Umzug!"); return; }
+    if (state.money < officeCosts[index]) { alert("Nicht genug Kapital für den Umzug! Du brauchst " + officeCosts[index].toLocaleString('de-DE') + " €."); return; }
     state.money -= officeCosts[index];
     state.officeStage++;
     state.maxServers += 20;
@@ -384,7 +471,7 @@ function upgradeOffice() {
 function buyResearch(key) {
     const def = researchDefs[key];
     if (state.research[key]) return;
-    if (state.researchPoints < def.cost) { alert("Nicht genug Forschungspunkte!"); return; }
+    if (state.researchPoints < def.cost) { alert("Nicht genug Forschungspunkte! Du brauchst " + def.cost + " RP."); return; }
     state.researchPoints -= def.cost;
     state.research[key] = true;
     if (key === 'autoscale') state.maxServers += 10;
@@ -402,7 +489,9 @@ function doIPO() {
         officeStage: 1, reputation: 50, researchPoints: 0,
         prestige: newPrestige,
         research: { testing: false, cicd: false, autoscale: false, marketing: false, security: false },
-        projects: []
+        projects: [],
+        hasCompletedFirstProject: true,
+        onboardingDismissed: true
     };
     log("📈 IPO erfolgreich! Prestige-Stufe: " + newPrestige);
     saveGame();
@@ -429,6 +518,7 @@ function checkProjectCompletion() {
             }
             state.money += finalReward;
             state.researchPoints += finalRP;
+            state.hasCompletedFirstProject = true;
             return false;
         }
         return true;
