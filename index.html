@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Tech-Imperium Tycoon 3.0</title>
+<title>Tech-Imperium Tycoon 4.0</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 @keyframes pulseWarn { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
@@ -15,9 +15,13 @@
 @keyframes popScale { 0%{transform:scale(1);} 50%{transform:scale(0.94);} 100%{transform:scale(1);} }
 .pop { animation: popScale 0.15s ease; }
 @keyframes floatUpFade { from{transform:translateY(0) translateX(-50%); opacity:1;} to{transform:translateY(-50px) translateX(-50%); opacity:0;} }
-.float-gain { position:absolute; left:50%; animation: floatUpFade 1s ease-out forwards; font-weight:bold; pointer-events:none; }
+.float-gain { position:absolute; left:50%; animation: floatUpFade 1s ease-out forwards; font-weight:bold; pointer-events:none; z-index:20; }
 @keyframes cardIn { from{transform:translateY(30px) scale(0.9); opacity:0;} to{transform:translateY(0) scale(1); opacity:1;} }
 .card-in { animation: cardIn 0.35s ease-out; }
+@keyframes shakeScreen { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-6px);} 40%{transform:translateX(6px);} 60%{transform:translateX(-4px);} 80%{transform:translateX(4px);} }
+.shake { animation: shakeScreen 0.4s ease; }
+@keyframes confettiFall { from{transform:translateY(-20px) rotate(0deg); opacity:1;} to{transform:translateY(300px) rotate(360deg); opacity:0;} }
+.confetti-piece { position:fixed; top:0; z-index:60; pointer-events:none; animation: confettiFall 1.4s ease-in forwards; }
 body { -webkit-tap-highlight-color: transparent; }
 .tab-active { color: #34d399 !important; }
 .tab-active .tab-icon { transform: translateY(-2px); }
@@ -26,13 +30,14 @@ body { -webkit-tap-highlight-color: transparent; }
 #timingTrack { position:relative; height:14px; background:#1e293b; border-radius:8px; overflow:hidden; border:1px solid #334155; }
 #timingZone { position:absolute; top:0; height:100%; background:rgba(52,211,153,0.35); border-left:2px solid #34d399; border-right:2px solid #34d399; }
 #timingCursor { position:absolute; top:-3px; width:4px; height:20px; background:#f8fafc; border-radius:2px; box-shadow:0 0 8px #fff; }
+.glow-diamond { text-shadow: 0 0 8px rgba(96,165,250,0.6); }
 </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col items-center select-none" style="padding-bottom:70px;">
+<body id="bodyRoot" class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col items-center select-none" style="padding-bottom:70px;">
 
 <div id="toastContainer" class="fixed top-3 right-3 z-50 flex flex-col gap-2 max-w-xs"></div>
+<div id="confettiContainer"></div>
 
-<!-- DECISION CARD MODAL -->
 <div id="decisionModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
     <div class="card-in bg-slate-900 border border-amber-700 rounded-2xl p-5 max-w-sm w-full">
         <p id="decisionIcon" class="text-3xl text-center mb-2">🃏</p>
@@ -45,7 +50,6 @@ body { -webkit-tap-highlight-color: transparent; }
     </div>
 </div>
 
-<!-- STICKY TOP BAR -->
 <div class="w-full max-w-md sticky top-0 z-40 bg-slate-950/95 backdrop-blur border-b border-slate-800 px-4 py-3">
     <div class="flex justify-between items-center">
         <div>
@@ -54,7 +58,7 @@ body { -webkit-tap-highlight-color: transparent; }
         </div>
         <div class="text-right">
             <p id="money" class="text-lg font-bold text-emerald-400">100 €</p>
-            <p class="text-[9px] text-slate-500">-<span id="salaryPerSec">0</span> €/s Gehalt</p>
+            <p class="text-[9px] text-slate-500">💎 <span id="diamonds" class="glow-diamond text-blue-300 font-bold">0</span> · -<span id="salaryPerSec">0</span> €/s</p>
         </div>
     </div>
     <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-2">
@@ -69,9 +73,9 @@ body { -webkit-tap-highlight-color: transparent; }
 <div id="onboardingBanner" class="w-full max-w-md bg-blue-950 border-b border-blue-800 p-4 text-sm">
     <p class="font-bold text-blue-300 mb-1 text-xs">👋 So spielst du:</p>
     <ol class="list-decimal list-inside text-blue-200 text-[11px] space-y-0.5">
-        <li>Tab <b>Projekte</b>: Auftrag starten</li>
-        <li>Tab <b>Team</b>: Mitarbeiter einstellen — sie arbeiten automatisch</li>
-        <li>Tab <b>Dashboard</b>: eigene Rolle wählen & aktiv mitwirken</li>
+        <li>Tab <b>Projekte</b>: Auftrag starten (auch Deadline-Aufträge!)</li>
+        <li>Tab <b>Team</b>: Mitarbeiter einstellen & spezialisieren</li>
+        <li>Tab <b>Dashboard</b>: eigene Rolle wählen, gegen Konkurrenz behaupten</li>
     </ol>
     <button onclick="dismissOnboarding()" class="mt-2 text-[10px] bg-blue-800 hover:bg-blue-700 px-2 py-1 rounded">Verstanden</button>
 </div>
@@ -96,9 +100,23 @@ body { -webkit-tap-highlight-color: transparent; }
             </div>
         </div>
 
+        <!-- MARKTTREND -->
+        <div id="trendBanner" class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-center text-[11px]">
+            <span id="trendText">📊 Markt stabil</span>
+        </div>
+
+        <!-- KONKURRENZ -->
+        <div>
+            <p class="text-[10px] text-slate-500 uppercase mb-2">🏁 Marktanteil vs. Konkurrenz</p>
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3">
+                <div class="w-full flex h-4 rounded-full overflow-hidden border border-slate-700 mb-2" id="marketShareBar"></div>
+                <div id="competitorList" class="space-y-1 text-[10px]"></div>
+            </div>
+        </div>
+
         <!-- ROLLENWAHL -->
         <div>
-            <p class="text-[10px] text-slate-500 uppercase mb-2">Deine aktive Rolle</p>
+            <p class="text-[10px] text-slate-500 uppercase mb-2">Deine aktive Rolle <span id="comboRoleText" class="text-amber-400"></span></p>
             <div class="grid grid-cols-3 gap-2">
                 <button onclick="selectRole('dev')" id="roleBtnDev" class="role-btn bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-center">
                     <p class="text-xl">👨‍💻</p>
@@ -115,16 +133,13 @@ body { -webkit-tap-highlight-color: transparent; }
             </div>
         </div>
 
-        <!-- ROLLE: ENTWICKLER - TIMING MINIGAME -->
         <div id="roleAreaDev" class="role-area bg-gradient-to-br from-blue-950 to-slate-900 p-5 rounded-2xl border border-blue-800/50 text-center relative overflow-hidden hidden">
             <p class="text-xs text-blue-300 font-semibold mb-1">💻 Code-Sprint</p>
             <p class="text-[10px] text-slate-400 mb-3">Klicke, wenn der Cursor in der grünen Zone ist!</p>
-
             <div id="timingTrack" class="mb-3">
                 <div id="timingZone" style="left:40%; width:20%;"></div>
                 <div id="timingCursor" style="left:0%;"></div>
             </div>
-
             <button id="codeBtn" onclick="hitTiming()" class="relative w-24 h-24 mx-auto rounded-full bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all flex items-center justify-center text-3xl shadow-lg shadow-blue-900/50 border-4 border-blue-400/30">
                 ⌨️
             </button>
@@ -132,7 +147,6 @@ body { -webkit-tap-highlight-color: transparent; }
             <p class="text-[9px] text-slate-500 mt-1">Streak: <span id="streakCount">0</span></p>
         </div>
 
-        <!-- ROLLE: VERTRIEB -->
         <div id="roleAreaSales" class="role-area bg-gradient-to-br from-amber-950 to-slate-900 p-5 rounded-2xl border border-amber-800/50 text-center hidden">
             <p class="text-xs text-amber-300 font-semibold mb-1">🤝 Kundenakquise</p>
             <p class="text-[10px] text-slate-400 mb-3">Verhandle mit Leads — höhere Belohnung für laufende & neue Projekte.</p>
@@ -141,7 +155,6 @@ body { -webkit-tap-highlight-color: transparent; }
             <p id="salesCooldownText" class="text-[9px] text-slate-600 mt-1">&nbsp;</p>
         </div>
 
-        <!-- ROLLE: MANAGER -->
         <div id="roleAreaManager" class="role-area bg-gradient-to-br from-purple-950 to-slate-900 p-5 rounded-2xl border border-purple-800/50 text-center hidden">
             <p class="text-xs text-purple-300 font-semibold mb-1">📊 Team-Motivation</p>
             <p class="text-[10px] text-slate-400 mb-3">Motiviere dein Team für temporären Speed-Boost.</p>
@@ -151,8 +164,9 @@ body { -webkit-tap-highlight-color: transparent; }
 
         <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-[10px] text-slate-400 space-y-1">
             <p>💰 <b class="text-emerald-400">Geld:</b> Meilensteine (25/50/75/100%) zahlen sofort aus</p>
-            <p>⚡ <b class="text-cyan-400">Tempo:</b> Mitarbeiter + deine Rolle (Entwickler/Vertrieb/Manager)</p>
+            <p>⚡ <b class="text-cyan-400">Tempo:</b> Mitarbeiter + Spezialisierung + deine Rolle</p>
             <p>🐛 <b class="text-rose-400">Bugs:</b> über 20 = weniger Lohn, über 40 = fast alles weg</p>
+            <p>💎 <b class="text-blue-300">Diamanten:</b> aus seltenen Erfolgen, für Premium-Shop</p>
         </div>
 
         <div>
@@ -178,7 +192,7 @@ body { -webkit-tap-highlight-color: transparent; }
     <!-- ==================== TAB: TEAM ==================== -->
     <div id="tab-team" class="tab-content space-y-4 hidden">
         <h2 class="text-sm font-semibold text-emerald-400">👥 Team-Verwaltung</h2>
-        <p class="text-[10px] text-slate-500">Stelle neue Leute ein, verbessere bestehende oder kündige sie.</p>
+        <p class="text-[10px] text-slate-500">Stelle neue Leute ein, spezialisiere, verbessere oder kündige sie.</p>
 
         <div>
             <p class="text-[10px] text-slate-500 uppercase mb-2">Neu einstellen</p>
@@ -227,6 +241,10 @@ body { -webkit-tap-highlight-color: transparent; }
             <p id="officeCostText" class="text-[10px] text-slate-500 mb-2">Kostet: 1.000 €</p>
             <button onclick="upgradeOffice()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-2 rounded-lg font-medium text-xs">Umziehen</button>
         </div>
+
+        <h2 class="text-sm font-semibold text-blue-300 pt-2">💎 Premium-Shop (Diamanten)</h2>
+        <p class="text-[10px] text-slate-500 mb-2">Dauerhafte Boosts, überleben IPO-Resets.</p>
+        <div id="diamondShopContainer" class="space-y-2"></div>
 
         <h2 class="text-sm font-semibold text-fuchsia-400 pt-2">🚀 Prestige</h2>
         <p class="text-[10px] text-slate-500">Bei Tech-Campus: IPO für +10% dauerhafte Belohnung, Reset des Fortschritts.</p>
@@ -280,35 +298,24 @@ body { -webkit-tap-highlight-color: transparent; }
 <script>
 // ===================== STATE =====================
 let state = {
-    money: 100,
-    bugs: 0,
-    servers: 2,
-    maxServers: 10,
-    officeStage: 1,
-    reputation: 50,
-    researchPoints: 0,
-    prestige: 0,
+    money: 100, diamonds: 0, bugs: 0, servers: 2, maxServers: 10,
+    officeStage: 1, reputation: 50, researchPoints: 0, prestige: 0,
     research: { testing: false, cicd: false, autoscale: false, marketing: false, security: false },
-    projects: [],
-    marketOffers: [],
-    employees: [],
-    nextEmployeeId: 1,
-    activeRole: 'dev',
-    streak: 0,
-    salesBonus: 0,
-    salesCooldown: 0,
-    managerBoostActive: 0,
-    managerCooldown: 0,
-    xp: 0,
-    playerLevel: 1,
-    skillPoints: 0,
+    projects: [], marketOffers: [], employees: [], nextEmployeeId: 1,
+    activeRole: 'dev', lastRoleSwitchTime: 0, roleHistory: [],
+    streak: 0, salesBonus: 0, salesCooldown: 0, managerBoostActive: 0, managerCooldown: 0,
+    xp: 0, playerLevel: 1, skillPoints: 0,
     skills: { fastFingers: 0, silverTongue: 0, ironWill: 0, luckyStar: 0 },
-    hasCompletedFirstProject: false,
-    onboardingDismissed: false,
-    achievements: {},
-    dailyGoal: null,
-    dailyGoalProgress: 0,
-    dailyGoalClaimed: false
+    permanentBoosts: { speedBoost: 0, salaryDiscount: 0, bugResist: 0, startCapital: 0 },
+    hasCompletedFirstProject: false, onboardingDismissed: false,
+    achievements: {}, dailyGoal: null, dailyGoalProgress: 0, dailyGoalClaimed: false,
+    marketShare: 40, competitors: [
+        { name: "ByteForge GmbH", share: 20, growth: 0.15 },
+        { name: "CodeNest AG", share: 20, growth: 0.1 },
+        { name: "PixelWerk Solutions", share: 20, growth: 0.2 }
+    ],
+    marketTrend: { name: "Markt stabil", multiplier: 1, icon: "📊" },
+    totalMoneyEarned: 0
 };
 
 const officeCosts = [1000, 5000, 20000];
@@ -317,10 +324,17 @@ const officeSlots = [1, 2, 3, 4];
 
 const employeeDefs = {
     intern: { name: "Praktikant", icon: "🧑‍🎓", baseSpeed: 0.5, salary: 1, hireCost: 75, upgradeCost: 60, bugRisk: true },
-    dev:    { name: "Junior Dev", icon: "👨‍💻", baseSpeed: 1.5, salary: 3, hireCost: 250, upgradeCost: 180, bugRisk: false },
-    senior: { name: "Senior Dev", icon: "🧙", baseSpeed: 4.0, salary: 8, hireCost: 800, upgradeCost: 500, bugRisk: false },
+    dev:    { name: "Junior Dev", icon: "👨‍💻", baseSpeed: 1.5, salary: 3, hireCost: 250, upgradeCost: 180, bugRisk: false, specializable: true },
+    senior: { name: "Senior Dev", icon: "🧙", baseSpeed: 4.0, salary: 8, hireCost: 800, upgradeCost: 500, bugRisk: false, specializable: true },
     admin:  { name: "QA/Bugfixer", icon: "🛡️", baseSpeed: 0, salary: 5, hireCost: 400, upgradeCost: 300, bugRisk: false, bugFix: 2 },
     sales:  { name: "Sales Manager", icon: "📈", baseSpeed: 0, salary: 6, hireCost: 600, upgradeCost: 400, bugRisk: false, rewardBoost: 0.02 }
+};
+
+const specializations = {
+    none: { name: "Generalist", icon: "⚙️", bonus: {} },
+    frontend: { name: "Frontend", icon: "🎨", bonus: { web: 1.3 } },
+    backend: { name: "Backend", icon: "🗄️", bonus: { cloud: 1.3 } },
+    devops: { name: "DevOps", icon: "🔧", bonus: { bugFixRate: 1.4 } }
 };
 
 const researchDefs = {
@@ -338,37 +352,50 @@ const skillDefs = {
     luckyStar: { name: "Glücksstern", icon: "🍀", desc: "+5% Chance auf positive Events pro Level", maxLevel: 5, cost: 1 }
 };
 
+const diamondShopDefs = {
+    speedBoost: { name: "Turbo-Codebase", icon: "🚀", desc: "+5% Team-Speed pro Stufe (permanent)", cost: 3, maxLevel: 10 },
+    salaryDiscount: { name: "Effiziente Prozesse", icon: "📉", desc: "-3% Gehaltskosten pro Stufe (permanent)", cost: 3, maxLevel: 10 },
+    bugResist: { name: "Qualitätskultur", icon: "🛡️", desc: "-5% Bug-Entstehung pro Stufe (permanent)", cost: 4, maxLevel: 8 },
+    startCapital: { name: "Startkapital-Booster", icon: "💰", desc: "+50 € Startkapital nach IPO pro Stufe", cost: 2, maxLevel: 10 }
+};
+
+const marketTrends = [
+    { name: "Markt stabil", multiplier: 1, icon: "📊" },
+    { name: "KI-Boom! Belohnungen +25%", multiplier: 1.25, icon: "🤖" },
+    { name: "Rezession: Belohnungen -15%", multiplier: 0.85, icon: "📉" },
+    { name: "Investoren-Hype! Belohnungen +40%", multiplier: 1.4, icon: "🔥" },
+    { name: "Tech-Skandal: Belohnungen -20%", multiplier: 0.8, icon: "⚠️" }
+];
+
 const achievementDefs = {
-    firstProject: { name: "Erster Auftrag", icon: "🎯", desc: "Schließe dein erstes Projekt ab" },
-    firstHire:    { name: "Erster Mitarbeiter", icon: "🤝", desc: "Stelle jemanden ein" },
-    rich1k:       { name: "Erste 1.000 €", icon: "💵", desc: "Erreiche 1.000 € Kapital" },
-    rich10k:      { name: "Zehntausender", icon: "💰", desc: "Erreiche 10.000 € Kapital" },
-    fullTeam:     { name: "Volles Haus", icon: "🏢", desc: "Stelle 10 Mitarbeiter ein" },
-    firstIPO:     { name: "An die Börse", icon: "📈", desc: "Führe dein erstes IPO durch" },
-    streak10:     { name: "Streak-Meister", icon: "🔥", desc: "Erreiche eine Timing-Streak von 10" },
-    perfectionist:{ name: "Perfektionist", icon: "✨", desc: "Schließe ein Projekt mit 0 Bugs ab" }
+    firstProject: { name: "Erster Auftrag", icon: "🎯", desc: "Schließe dein erstes Projekt ab", diamonds: 1 },
+    firstHire:    { name: "Erster Mitarbeiter", icon: "🤝", desc: "Stelle jemanden ein", diamonds: 1 },
+    rich1k:       { name: "Erste 1.000 €", icon: "💵", desc: "Erreiche 1.000 € Kapital", diamonds: 2 },
+    rich10k:      { name: "Zehntausender", icon: "💰", desc: "Erreiche 10.000 € Kapital", diamonds: 5 },
+    fullTeam:     { name: "Volles Haus", icon: "🏢", desc: "Stelle 10 Mitarbeiter ein", diamonds: 3 },
+    firstIPO:     { name: "An die Börse", icon: "📈", desc: "Führe dein erstes IPO durch", diamonds: 10 },
+    streak10:     { name: "Streak-Meister", icon: "🔥", desc: "Erreiche eine Timing-Streak von 10", diamonds: 2 },
+    perfectionist:{ name: "Perfektionist", icon: "✨", desc: "Schließe ein Projekt mit 0 Bugs ab", diamonds: 2 },
+    marketLeader: { name: "Marktführer", icon: "👑", desc: "Erreiche 50% Marktanteil", diamonds: 5 },
+    allrounder:   { name: "Allrounder", icon: "🔄", desc: "Wechsle alle 3 Rollen innerhalb von 30s", diamonds: 3 },
+    deadlineHero: { name: "Deadline-Held", icon: "⏱️", desc: "Schließe einen Deadline-Auftrag rechtzeitig ab", diamonds: 2 }
 };
 
 const marketProjectTemplates = [
-    { name: "Bugfix-Tool", work: 50, reward: 60, rp: 5, minRep: 0 },
-    { name: "Landingpage", work: 80, reward: 100, rp: 8, minRep: 0 },
-    { name: "Mobile App", work: 200, reward: 300, rp: 15, minRep: 0 },
-    { name: "E-Commerce Shop", work: 350, reward: 550, rp: 25, minRep: 20 },
-    { name: "Enterprise Cloud", work: 800, reward: 1500, rp: 40, minRep: 30 },
-    { name: "Fintech Dashboard", work: 1200, reward: 2400, rp: 60, minRep: 50 },
-    { name: "KI-Plattform", work: 2500, reward: 6000, rp: 120, minRep: 70 },
-    { name: "Blockchain-Suite", work: 4000, reward: 10000, rp: 200, minRep: 85 }
+    { name: "Bugfix-Tool", work: 50, reward: 60, rp: 5, minRep: 0, category: "web" },
+    { name: "Landingpage", work: 80, reward: 100, rp: 8, minRep: 0, category: "web" },
+    { name: "Mobile App", work: 200, reward: 300, rp: 15, minRep: 0, category: "web" },
+    { name: "E-Commerce Shop", work: 350, reward: 550, rp: 25, minRep: 20, category: "web" },
+    { name: "Enterprise Cloud", work: 800, reward: 1500, rp: 40, minRep: 30, category: "cloud" },
+    { name: "Fintech Dashboard", work: 1200, reward: 2400, rp: 60, minRep: 50, category: "cloud" },
+    { name: "KI-Plattform", work: 2500, reward: 6000, rp: 120, minRep: 70, category: "cloud" },
+    { name: "Blockchain-Suite", work: 4000, reward: 10000, rp: 200, minRep: 85, category: "cloud" }
 ];
 
 let logEntries = [];
-let timingInterval = null;
-let timingPos = 0;
-let timingDir = 1;
-let timingSpeed = 2;
-let timingZoneStart = 40;
-let timingZoneWidth = 20;
+let timingInterval = null, timingPos = 0, timingDir = 1, timingSpeed = 2, timingZoneStart = 40, timingZoneWidth = 20;
 
-// ===================== TOASTS & LOG =====================
+// ===================== VISUAL FX =====================
 function toast(msg, type = "info") {
     const colors = { info: "bg-slate-800 border-slate-700", success: "bg-emerald-900 border-emerald-700", warn: "bg-amber-900 border-amber-700", danger: "bg-rose-900 border-rose-700" };
     const el = document.createElement('div');
@@ -397,6 +424,27 @@ function floatGain(text, color, targetElId) {
     setTimeout(() => el.remove(), 1000);
 }
 
+function screenShake() {
+    document.getElementById('bodyRoot').classList.remove('shake');
+    void document.getElementById('bodyRoot').offsetWidth;
+    document.getElementById('bodyRoot').classList.add('shake');
+}
+
+function confettiBurst() {
+    const colors = ['#34d399', '#60a5fa', '#f59e0b', '#f472b6', '#a78bfa'];
+    for (let i = 0; i < 24; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.width = '8px';
+        piece.style.height = '8px';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = (Math.random() * 0.3) + 's';
+        document.getElementById('confettiContainer').appendChild(piece);
+        setTimeout(() => piece.remove(), 1800);
+    }
+}
+
 function dismissOnboarding() {
     state.onboardingDismissed = true;
     document.getElementById('onboardingBanner').classList.add('hidden');
@@ -410,8 +458,20 @@ function switchTab(name) {
     document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.add('tab-active');
 }
 
-// ===================== ROLE SYSTEM =====================
+// ===================== ROLE SYSTEM + COMBO =====================
 function selectRole(role) {
+    const now = Date.now();
+    if (state.activeRole !== role) {
+        state.roleHistory.push({ role, time: now });
+        state.roleHistory = state.roleHistory.filter(r => now - r.time < 30000);
+        const uniqueRoles = new Set(state.roleHistory.map(r => r.role));
+        if (uniqueRoles.size >= 3) {
+            unlockAchievement('allrounder');
+            document.getElementById('comboRoleText').innerText = "🔄 Allrounder-Bonus aktiv!";
+            state.salesBonus += 10;
+            setTimeout(() => { document.getElementById('comboRoleText').innerText = ''; }, 5000);
+        }
+    }
     state.activeRole = role;
     document.querySelectorAll('.role-area').forEach(el => el.classList.add('hidden'));
     document.querySelectorAll('.role-btn').forEach(el => el.classList.remove('border-emerald-500', 'bg-slate-800'));
@@ -431,12 +491,11 @@ function selectRole(role) {
     saveGame();
 }
 
-// ===================== TIMING MINIGAME (ENTWICKLER) =====================
+// ===================== TIMING MINIGAME =====================
 function startTimingLoop() {
     stopTimingLoop();
     randomizeTimingZone();
-    timingPos = 0;
-    timingDir = 1;
+    timingPos = 0; timingDir = 1;
     timingInterval = setInterval(() => {
         timingPos += timingDir * timingSpeed;
         if (timingPos >= 100) { timingPos = 100; timingDir = -1; }
@@ -444,11 +503,7 @@ function startTimingLoop() {
         document.getElementById('timingCursor').style.left = timingPos + '%';
     }, 20);
 }
-
-function stopTimingLoop() {
-    if (timingInterval) clearInterval(timingInterval);
-    timingInterval = null;
-}
+function stopTimingLoop() { if (timingInterval) clearInterval(timingInterval); timingInterval = null; }
 
 function randomizeTimingZone() {
     timingZoneWidth = Math.max(10, 22 - state.skills.fastFingers * 1.5);
@@ -468,33 +523,28 @@ function hitTiming() {
     btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop');
 
     const proj = state.projects[0];
-    let gainPercent, resultText, resultColor, xpGain;
+    let gainPercent, resultText, xpGain;
 
     if (inZone && distance < timingZoneWidth * 0.2) {
         gainPercent = 0.06 * (1 + state.skills.fastFingers * 0.15);
         state.streak++;
         resultText = "🎯 PERFEKT! Kombo x" + state.streak;
-        resultColor = "success";
         xpGain = 8;
         const bonusMoney = Math.floor(5 + state.streak * 2);
         state.money += bonusMoney;
         floatGain("+" + bonusMoney + " €", "#34d399", "codeBtn");
+        if (state.streak % 10 === 0) confettiBurst();
     } else if (inZone) {
         gainPercent = 0.035 * (1 + state.skills.fastFingers * 0.15);
         state.streak++;
         resultText = "✅ Gut getroffen!";
-        resultColor = "info";
         xpGain = 4;
     } else {
         gainPercent = 0.01;
         state.streak = 0;
         resultText = "❌ Verfehlt...";
-        resultColor = "danger";
         xpGain = 1;
-        if (Math.random() < 0.2) {
-            state.bugs += 2;
-            resultText += " (+2 Bugs)";
-        }
+        if (Math.random() < 0.2) { state.bugs += 2; resultText += " (+2 Bugs)"; }
     }
 
     proj.progress += proj.totalWork * gainPercent;
@@ -509,31 +559,19 @@ function hitTiming() {
     updateUI();
 }
 
-// ===================== ROLE: VERTRIEB =====================
 function doSalesPitch() {
     if (state.salesCooldown > 0) { toast("Noch " + state.salesCooldown + "s Cooldown!", "warn"); return; }
     const roll = Math.random() + state.skills.silverTongue * 0.05;
     let bonus, xpGain;
-    if (roll > 0.75) {
-        bonus = 15 + Math.floor(Math.random() * 10);
-        toast("🤝 Top-Deal! +" + bonus + "% Bonus auf nächste Belohnung", "success");
-        xpGain = 10;
-    } else if (roll > 0.4) {
-        bonus = 5 + Math.floor(Math.random() * 8);
-        toast("🤝 Solider Deal! +" + bonus + "% Bonus", "info");
-        xpGain = 5;
-    } else {
-        bonus = 0;
-        toast("😐 Kunde war nicht interessiert.", "warn");
-        xpGain = 2;
-    }
+    if (roll > 0.75) { bonus = 15 + Math.floor(Math.random() * 10); toast("🤝 Top-Deal! +" + bonus + "% Bonus", "success"); xpGain = 10; }
+    else if (roll > 0.4) { bonus = 5 + Math.floor(Math.random() * 8); toast("🤝 Solider Deal! +" + bonus + "% Bonus", "info"); xpGain = 5; }
+    else { bonus = 0; toast("😐 Kunde war nicht interessiert.", "warn"); xpGain = 2; }
     state.salesBonus = Math.min(100, state.salesBonus + bonus);
     state.salesCooldown = 8;
     addXP(xpGain);
     updateUI();
 }
 
-// ===================== ROLE: MANAGER =====================
 function doManagerBoost() {
     if (state.managerCooldown > 0) { toast("Noch " + state.managerCooldown + "s Cooldown!", "warn"); return; }
     state.managerBoostActive = 15;
@@ -543,7 +581,6 @@ function doManagerBoost() {
     updateUI();
 }
 
-// ===================== XP / LEVEL / SKILLS =====================
 function addXP(amount) {
     state.xp += amount;
     const xpNeeded = state.playerLevel * 50;
@@ -566,41 +603,61 @@ function buySkill(key) {
     updateUI();
 }
 
+function buyDiamondBoost(key) {
+    const def = diamondShopDefs[key];
+    const level = state.permanentBoosts[key];
+    if (level >= def.maxLevel) { toast("Maximale Stufe erreicht!", "info"); return; }
+    const cost = def.cost + level;
+    if (state.diamonds < cost) { toast("Nicht genug Diamanten! Brauchst " + cost + " 💎", "warn"); return; }
+    state.diamonds -= cost;
+    state.permanentBoosts[key]++;
+    toast("💎 " + def.name + " Stufe " + state.permanentBoosts[key] + "!", "success");
+    updateUI();
+}
+
 function renderSkills() {
-    const container = document.getElementById('skillContainer');
-    container.innerHTML = Object.entries(skillDefs).map(([key, def]) => {
+    document.getElementById('skillContainer').innerHTML = Object.entries(skillDefs).map(([key, def]) => {
         const level = state.skills[key];
         const maxed = level >= def.maxLevel;
-        return `
-        <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800">
-            <div>
-                <p class="font-medium text-xs">${def.icon} ${def.name} <span class="text-slate-500">Lv.${level}/${def.maxLevel}</span></p>
-                <p class="text-[10px] text-slate-500">${def.desc}</p>
-            </div>
+        return `<div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800">
+            <div><p class="font-medium text-xs">${def.icon} ${def.name} <span class="text-slate-500">Lv.${level}/${def.maxLevel}</span></p>
+            <p class="text-[10px] text-slate-500">${def.desc}</p></div>
             ${maxed ? '<span class="text-[10px] text-emerald-500">MAX</span>' : `<button onclick="buySkill('${key}')" class="bg-emerald-800 hover:bg-emerald-700 px-3 py-1.5 rounded-lg text-[10px]">+1 (${def.cost} SP)</button>`}
         </div>`;
     }).join('');
 }
 
-// ===================== ACHIEVEMENTS =====================
+function renderDiamondShop() {
+    document.getElementById('diamondShopContainer').innerHTML = Object.entries(diamondShopDefs).map(([key, def]) => {
+        const level = state.permanentBoosts[key];
+        const maxed = level >= def.maxLevel;
+        const cost = def.cost + level;
+        return `<div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800">
+            <div><p class="font-medium text-xs">${def.icon} ${def.name} <span class="text-slate-500">Lv.${level}/${def.maxLevel}</span></p>
+            <p class="text-[10px] text-slate-500">${def.desc}</p></div>
+            ${maxed ? '<span class="text-[10px] text-emerald-500">MAX</span>' : `<button onclick="buyDiamondBoost('${key}')" class="bg-blue-800 hover:bg-blue-700 px-3 py-1.5 rounded-lg text-[10px]">💎${cost}</button>`}
+        </div>`;
+    }).join('');
+}
+
 function unlockAchievement(key) {
     if (state.achievements[key]) return;
     state.achievements[key] = true;
     const def = achievementDefs[key];
-    toast("🏆 Erfolg freigeschaltet: " + def.name, "success");
+    state.diamonds += def.diamonds || 0;
+    toast("🏆 " + def.name + "! +" + (def.diamonds || 0) + " 💎", "success");
     log("🏆 Erfolg: " + def.name);
+    confettiBurst();
     renderAchievements();
 }
 
 function renderAchievements() {
-    const container = document.getElementById('achievementsContainer');
-    container.innerHTML = Object.entries(achievementDefs).map(([key, def]) => {
+    document.getElementById('achievementsContainer').innerHTML = Object.entries(achievementDefs).map(([key, def]) => {
         const unlocked = state.achievements[key];
         return `<div class="px-2.5 py-1.5 rounded-lg text-[10px] border ${unlocked ? 'bg-amber-900/40 border-amber-700 text-amber-300' : 'bg-slate-900 border-slate-800 text-slate-600'}" title="${def.desc}">${def.icon} ${def.name}</div>`;
     }).join('');
 }
 
-// ===================== DAILY GOAL =====================
 function generateDailyGoal() {
     const goals = [
         { key: 'completeProjects', target: 3, desc: "Schließe 3 Projekte ab", reward: 200 },
@@ -617,8 +674,7 @@ function renderDailyGoal() {
     if (!state.dailyGoal) generateDailyGoal();
     const g = state.dailyGoal;
     const percent = Math.min(100, Math.floor((state.dailyGoalProgress / g.target) * 100));
-    const container = document.getElementById('dailyGoalContainer');
-    container.innerHTML = `
+    document.getElementById('dailyGoalContainer').innerHTML = `
         <p class="text-xs font-medium mb-1">${g.desc}</p>
         <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700 mb-2">
             <div class="bg-amber-500 h-full transition-all" style="width:${percent}%;"></div>
@@ -634,45 +690,30 @@ function claimDailyGoal() {
     state.money += state.dailyGoal.reward;
     state.dailyGoalClaimed = true;
     toast("📅 Tagesziel abgeholt! +" + state.dailyGoal.reward + " €", "success");
+    confettiBurst();
     setTimeout(() => { generateDailyGoal(); updateUI(); }, 2000);
     updateUI();
 }
 
-// ===================== DECISION CARDS =====================
 const decisionCards = [
-    {
-        icon: "💼", title: "Risikoreicher Großkunde",
-        text: "Ein Kunde bietet doppeltes Honorar für dein aktuelles Projekt, verlangt aber engere Deadlines (mehr Bug-Risiko).",
-        yes: () => { if (state.projects.length > 0) { state.projects[0].reward *= 2; state.bugs += 8; toast("💼 Deal! Belohnung verdoppelt, +8 Bugs", "warn"); } else toast("Kein aktives Projekt.", "info"); },
-        no: () => { toast("Abgelehnt. Sicher ist sicher.", "info"); }
-    },
-    {
-        icon: "🎓", title: "Fortbildungsangebot",
-        text: "Ein Trainer bietet ein Wochenend-Seminar an: 200 € Kosten, aber dein Team lernt dazu.",
-        yes: () => { if (state.money >= 200) { state.money -= 200; addXP(30); toast("🎓 Seminar gebucht! +30 XP", "success"); } else toast("Nicht genug Kapital!", "warn"); },
-        no: () => { toast("Abgelehnt.", "info"); }
-    },
-    {
-        icon: "📰", title: "Presse-Anfrage",
-        text: "Ein Magazin will über dich berichten. Kostenlos, aber du musst Zeit investieren (-5% Team-Speed für 20s).",
-        yes: () => { state.reputation = Math.min(100, state.reputation + 10); toast("📰 Artikel erschienen! Reputation +10", "success"); },
-        no: () => { toast("Kein Interesse an Presse.", "info"); }
-    },
-    {
-        icon: "⚖️", title: "Rechtsstreit droht",
-        text: "Ein Ex-Mitarbeiter droht mit Klage wegen Überstunden. Vergleich zahlen (300 €) oder riskieren?",
-        yes: () => { state.money = Math.max(0, state.money - 300); toast("⚖️ Vergleich gezahlt: -300 €", "warn"); },
-        no: () => {
-            if (Math.random() < 0.5) { state.reputation = Math.max(0, state.reputation - 20); toast("⚖️ Verloren! Reputation -20", "danger"); }
-            else { toast("⚖️ Gewonnen! Keine Kosten.", "success"); }
-        }
-    },
-    {
-        icon: "🚀", title: "Investoren-Interesse",
-        text: "Ein Investor bietet 500 € gegen zukünftige 5% weniger Projekt-Belohnung. Annehmen?",
-        yes: () => { state.money += 500; state.reputation = Math.max(0, state.reputation - 5); toast("🚀 +500 € vom Investor erhalten", "success"); },
-        no: () => { toast("Abgelehnt, Unabhängigkeit bewahrt.", "info"); }
-    }
+    { icon: "💼", title: "Risikoreicher Großkunde", text: "Ein Kunde bietet doppeltes Honorar für dein aktuelles Projekt, verlangt aber engere Deadlines (mehr Bug-Risiko).",
+      yes: () => { if (state.projects.length > 0) { state.projects[0].reward *= 2; state.bugs += 8; toast("💼 Deal! Belohnung verdoppelt, +8 Bugs", "warn"); } else toast("Kein aktives Projekt.", "info"); },
+      no: () => toast("Abgelehnt. Sicher ist sicher.", "info") },
+    { icon: "🎓", title: "Fortbildungsangebot", text: "Ein Trainer bietet ein Wochenend-Seminar an: 200 € Kosten, aber dein Team lernt dazu.",
+      yes: () => { if (state.money >= 200) { state.money -= 200; addXP(30); toast("🎓 Seminar gebucht! +30 XP", "success"); } else toast("Nicht genug Kapital!", "warn"); },
+      no: () => toast("Abgelehnt.", "info") },
+    { icon: "📰", title: "Presse-Anfrage", text: "Ein Magazin will über dich berichten. Kostenlos, gibt Reputation.",
+      yes: () => { state.reputation = Math.min(100, state.reputation + 10); toast("📰 Artikel erschienen! Reputation +10", "success"); },
+      no: () => toast("Kein Interesse an Presse.", "info") },
+    { icon: "⚖️", title: "Rechtsstreit droht", text: "Ein Ex-Mitarbeiter droht mit Klage. Vergleich zahlen (300 €) oder riskieren?",
+      yes: () => { state.money = Math.max(0, state.money - 300); toast("⚖️ Vergleich gezahlt: -300 €", "warn"); },
+      no: () => { if (Math.random() < 0.5) { state.reputation = Math.max(0, state.reputation - 20); toast("⚖️ Verloren! Reputation -20", "danger"); } else toast("⚖️ Gewonnen! Keine Kosten.", "success"); } },
+    { icon: "🚀", title: "Investoren-Interesse", text: "Ein Investor bietet 500 € gegen zukünftige 5% weniger Projekt-Belohnung. Annehmen?",
+      yes: () => { state.money += 500; state.reputation = Math.max(0, state.reputation - 5); toast("🚀 +500 € vom Investor erhalten", "success"); },
+      no: () => toast("Abgelehnt, Unabhängigkeit bewahrt.", "info") },
+    { icon: "🕵️", title: "Konkurrenz spioniert", text: "Ein Konkurrent bietet Insiderwissen über den Markt für 150 €. Kaufen?",
+      yes: () => { if (state.money >= 150) { state.money -= 150; state.marketShare += 5; toast("🕵️ Marktanteil +5%!", "success"); } else toast("Nicht genug Kapital!", "warn"); },
+      no: () => toast("Abgelehnt.", "info") }
 ];
 
 function maybeTriggerDecisionCard() {
@@ -686,25 +727,30 @@ function maybeTriggerDecisionCard() {
     document.getElementById('decisionNoBtn').onclick = () => { card.no(); document.getElementById('decisionModal').classList.add('hidden'); updateUI(); };
 }
 
-// ===================== MARKET (PROJECT OFFERS) =====================
+// ===================== MARKET =====================
 function refreshMarket() {
     const available = marketProjectTemplates.filter(t => t.minRep <= state.reputation);
-    const picks = [];
     const shuffled = [...available].sort(() => Math.random() - 0.5);
+    const picks = [];
     for (let i = 0; i < Math.min(4, shuffled.length); i++) {
         const t = shuffled[i];
         const priceVariance = 0.85 + Math.random() * 0.3;
-        picks.push({ ...t, reward: Math.floor(t.reward * priceVariance) });
+        const hasDeadline = Math.random() < 0.35;
+        picks.push({
+            ...t,
+            reward: Math.floor(t.reward * priceVariance * state.marketTrend.multiplier),
+            hasDeadline,
+            deadlineSeconds: hasDeadline ? Math.floor(t.work / 3 + 20) : null
+        });
     }
     state.marketOffers = picks;
     renderMarket();
 }
 
 function renderMarket() {
-    const container = document.getElementById('marketProjectsContainer');
-    container.innerHTML = state.marketOffers.map((t, i) => `
-        <button onclick="startProjectFromMarket(${i})" class="w-full bg-slate-900 hover:bg-slate-800 p-3 rounded-xl text-left text-xs transition border border-slate-800 flex justify-between items-center">
-            <span>${t.name} <span class="text-slate-500">(${t.work} Arbeit)</span></span>
+    document.getElementById('marketProjectsContainer').innerHTML = state.marketOffers.map((t, i) => `
+        <button onclick="startProjectFromMarket(${i})" class="w-full bg-slate-900 hover:bg-slate-800 p-3 rounded-xl text-left text-xs transition border ${t.hasDeadline ? 'border-rose-700' : 'border-slate-800'} flex justify-between items-center">
+            <span>${t.name} <span class="text-slate-500">(${t.work} Arbeit)</span>${t.hasDeadline ? ' <span class="text-rose-400">⏱️' + t.deadlineSeconds + 's</span>' : ''}</span>
             <span class="text-emerald-400 font-bold">+${t.reward.toLocaleString('de-DE')} €</span>
         </button>`).join('');
 }
@@ -712,31 +758,53 @@ function renderMarket() {
 function startProjectFromMarket(index) {
     const t = state.marketOffers[index];
     if (!t) return;
-    startProject(t.name, t.work, t.reward, t.rp);
+    startProject(t.name, t.work, t.reward, t.rp, t.category, t.hasDeadline ? t.deadlineSeconds : null);
 }
 
 setInterval(() => { refreshMarket(); }, 60000);
+
+// ===================== MARKET TREND & COMPETITORS =====================
+function rotateMarketTrend() {
+    state.marketTrend = marketTrends[Math.floor(Math.random() * marketTrends.length)];
+    document.getElementById('trendText').innerText = state.marketTrend.icon + " " + state.marketTrend.name;
+    refreshMarket();
+}
+setInterval(rotateMarketTrend, 90000);
+
+function simulateCompetitors() {
+    state.competitors.forEach(c => {
+        c.share += (Math.random() - 0.4) * c.growth;
+        c.share = Math.max(2, c.share);
+    });
+    const totalCompetitorShare = state.competitors.reduce((s, c) => s + c.share, 0);
+    state.marketShare = Math.max(5, 100 - totalCompetitorShare);
+    if (state.marketShare >= 50) unlockAchievement('marketLeader');
+}
+
+function renderCompetitors() {
+    const total = state.marketShare + state.competitors.reduce((s, c) => s + c.share, 0);
+    const barColors = ['#34d399', '#f87171', '#fbbf24', '#818cf8'];
+    let barHtml = `<div style="width:${(state.marketShare/total*100)}%; background:${barColors[0]};"></div>`;
+    state.competitors.forEach((c, i) => { barHtml += `<div style="width:${(c.share/total*100)}%; background:${barColors[i+1]};"></div>`; });
+    document.getElementById('marketShareBar').innerHTML = barHtml;
+
+    document.getElementById('competitorList').innerHTML =
+        `<div class="flex justify-between text-emerald-400"><span>🟢 Deine Firma</span><span>${state.marketShare.toFixed(1)}%</span></div>` +
+        state.competitors.map((c, i) => `<div class="flex justify-between text-slate-400"><span>${['🔴','🟡','🔵'][i]} ${c.name}</span><span>${c.share.toFixed(1)}%</span></div>`).join('');
+}
 
 // ===================== NEXT STEP HINT =====================
 function updateNextStepHint() {
     const text = document.getElementById('nextStepText');
     const slots = officeSlots[state.officeStage - 1] || 1;
     let hint = "";
-    if (state.projects.length === 0) {
-        hint = "💡 Kein aktives Projekt — geh zum Tab 'Projekte' und starte einen Auftrag!";
-    } else if (state.bugs > 40) {
-        hint = "🚨 Kritisch viele Bugs! QA-Mitarbeiter im Team-Tab einstellen!";
-    } else if (state.bugs > 20) {
-        hint = "⚠️ Viele Bugs (" + Math.floor(state.bugs) + ") — QA-Mitarbeiter hilft!";
-    } else if (state.money < 50 && state.employees.length > 0) {
-        hint = "💸 Kapital wird knapp! Warte auf Projekt-Abschluss.";
-    } else if (getTeamSpeed() === 0 && state.projects.length > 0) {
-        hint = "🐢 Niemand arbeitet! Stelle im Team-Tab jemanden ein oder hilf selbst als Entwickler mit.";
-    } else if (state.projects.length < slots && state.servers > state.projects.length) {
-        hint = "✅ Freie Slots! Starte ein weiteres Projekt parallel.";
-    } else {
-        hint = "✅ Alles läuft — Team arbeitet automatisch weiter.";
-    }
+    if (state.projects.length === 0) hint = "💡 Kein aktives Projekt — geh zum Tab 'Projekte' und starte einen Auftrag!";
+    else if (state.bugs > 40) hint = "🚨 Kritisch viele Bugs! QA-Mitarbeiter im Team-Tab einstellen!";
+    else if (state.bugs > 20) hint = "⚠️ Viele Bugs (" + Math.floor(state.bugs) + ") — QA-Mitarbeiter hilft!";
+    else if (state.money < 50 && state.employees.length > 0) hint = "💸 Kapital wird knapp! Warte auf Projekt-Abschluss.";
+    else if (getTeamSpeed() === 0 && state.projects.length > 0) hint = "🐢 Niemand arbeitet! Stelle Personal ein oder hilf selbst mit.";
+    else if (state.projects.length < slots && state.servers > state.projects.length) hint = "✅ Freie Slots! Starte ein weiteres Projekt parallel.";
+    else hint = "✅ Alles läuft — Team arbeitet automatisch weiter.";
     text.innerText = hint;
 
     document.getElementById('badgeProjects').classList.toggle('hidden', state.projects.length > 0);
@@ -764,6 +832,7 @@ function updateUI() {
     document.getElementById('teamTotalCount').innerText = state.employees.length;
     document.getElementById('playerLevel').innerText = state.playerLevel;
     document.getElementById('skillPoints').innerText = state.skillPoints;
+    document.getElementById('diamonds').innerText = state.diamonds;
     document.getElementById('xpBar').style.width = Math.min(100, (state.xp / (state.playerLevel * 50)) * 100) + '%';
 
     const salaryTotal = getSalaryTotal();
@@ -780,7 +849,6 @@ function updateUI() {
     const serverCost = 100 + state.servers * 20;
     document.getElementById('serverCostText').innerText = serverCost.toLocaleString('de-DE') + " € (+5 Kapazität)";
 
-    const kiUnlockable = state.reputation >= 70;
     document.getElementById('ipoBtn').disabled = state.officeStage < 4;
     document.getElementById('ipoBtn').classList.toggle('opacity-50', state.officeStage < 4);
 
@@ -793,15 +861,18 @@ function updateUI() {
     renderProjects();
     renderResearch();
     renderSkills();
+    renderDiamondShop();
     renderEmployeeList();
     renderAchievements();
     renderDailyGoal();
+    renderCompetitors();
     updateNextStepHint();
 }
 
 function getSalaryTotal() {
     const base = state.employees.reduce((sum, e) => sum + employeeDefs[e.type].salary * e.level, 0);
-    return Math.floor(base * (1 - state.skills.ironWill * 0.1));
+    const discount = state.skills.ironWill * 0.1 + state.permanentBoosts.salaryDiscount * 0.03;
+    return Math.floor(base * Math.max(0.2, 1 - discount));
 }
 
 function checkMilestones(p) {
@@ -820,10 +891,7 @@ function checkMilestones(p) {
 
 function renderProjects() {
     const container = document.getElementById('activeProjectsContainer');
-    if (state.projects.length === 0) {
-        container.innerHTML = '<p class="text-[11px] text-slate-500 italic">Keine aktiven Projekte.</p>';
-        return;
-    }
+    if (state.projects.length === 0) { container.innerHTML = '<p class="text-[11px] text-slate-500 italic">Keine aktiven Projekte.</p>'; return; }
     const speed = getTeamSpeed();
     const perProjectSpeed = speed / state.projects.length;
 
@@ -831,31 +899,24 @@ function renderProjects() {
         const percent = Math.min(100, Math.floor((p.progress / p.totalWork) * 100));
         const remaining = p.totalWork - p.progress;
         let etaText = perProjectSpeed > 0 ? "Fertig in ca. " + Math.ceil(remaining / perProjectSpeed) + "s" : "wartet auf Personal...";
-        return `
-        <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-800">
-            <div class="flex justify-between mb-1.5">
-                <p class="font-bold text-xs text-slate-200">${p.name}</p>
-                <p class="text-[10px] text-slate-400">${percent}%</p>
-            </div>
-            <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
-                <div class="bg-blue-500 h-full transition-all duration-500" style="width:${percent}%;"></div>
-            </div>
-            <p class="text-[10px] text-slate-500 mt-1.5">Lohn: ${p.reward.toLocaleString('de-DE')} € · +${p.rp} RP · ${etaText}</p>
+        let deadlineText = "";
+        if (p.deadlineRemaining !== null && p.deadlineRemaining !== undefined) {
+            deadlineText = ` · <span class="${p.deadlineRemaining < 10 ? 'text-rose-400 font-bold' : 'text-amber-400'}">⏱️ ${p.deadlineRemaining}s</span>`;
+        }
+        return `<div class="bg-slate-900 p-3.5 rounded-xl border ${p.deadlineRemaining !== null && p.deadlineRemaining !== undefined ? 'border-rose-800/60' : 'border-slate-800'}">
+            <div class="flex justify-between mb-1.5"><p class="font-bold text-xs text-slate-200">${p.name}</p><p class="text-[10px] text-slate-400">${percent}%</p></div>
+            <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700"><div class="bg-blue-500 h-full transition-all duration-500" style="width:${percent}%;"></div></div>
+            <p class="text-[10px] text-slate-500 mt-1.5">Lohn: ${p.reward.toLocaleString('de-DE')} € · +${p.rp} RP · ${etaText}${deadlineText}</p>
         </div>`;
     }).join('');
 }
 
 function renderResearch() {
-    const container = document.getElementById('researchContainer');
-    container.innerHTML = Object.entries(researchDefs).map(([key, def]) => {
+    document.getElementById('researchContainer').innerHTML = Object.entries(researchDefs).map(([key, def]) => {
         const owned = state.research[key];
         const affordable = state.researchPoints >= def.cost;
-        return `
-        <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800">
-            <div>
-                <p class="font-medium text-xs">${def.name} ${owned ? '✅' : ''}</p>
-                <p class="text-[10px] text-slate-500">${def.desc} · ${def.cost} RP</p>
-            </div>
+        return `<div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800">
+            <div><p class="font-medium text-xs">${def.name} ${owned ? '✅' : ''}</p><p class="text-[10px] text-slate-500">${def.desc} · ${def.cost} RP</p></div>
             ${owned ? '' : `<button onclick="buyResearch('${key}')" class="${affordable ? 'bg-cyan-700 hover:bg-cyan-600' : 'bg-slate-800 text-slate-500'} px-3 py-1.5 rounded-lg text-[10px]">Kaufen</button>`}
         </div>`;
     }).join('');
@@ -863,25 +924,27 @@ function renderResearch() {
 
 function renderEmployeeList() {
     const container = document.getElementById('employeeListContainer');
-    if (state.employees.length === 0) {
-        container.innerHTML = '<p class="text-[11px] text-slate-500 italic">Noch keine Mitarbeiter eingestellt.</p>';
-        return;
-    }
+    if (state.employees.length === 0) { container.innerHTML = '<p class="text-[11px] text-slate-500 italic">Noch keine Mitarbeiter eingestellt.</p>'; return; }
     container.innerHTML = state.employees.map(e => {
         const def = employeeDefs[e.type];
         const upgradeCost = Math.floor(def.upgradeCost * Math.pow(1.6, e.level - 1));
         const fireCost = Math.floor(def.hireCost * 0.3 * e.level);
         const speedContribution = def.baseSpeed * e.level;
         let statLine = def.baseSpeed > 0 ? `+${speedContribution.toFixed(1)} Speed` : (def.bugFix ? `-${def.bugFix * e.level} Bugs/s` : `+${(def.rewardBoost * e.level * 100).toFixed(0)}% Belohnung`);
-        return `
-        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+        let specHtml = "";
+        if (def.specializable) {
+            const spec = e.specialization || 'none';
+            specHtml = `<div class="flex gap-1 mt-2">` + Object.entries(specializations).map(([sk, sd]) =>
+                `<button onclick="setSpecialization(${e.id}, '${sk}')" class="flex-1 text-[9px] py-1 rounded ${spec === sk ? 'bg-emerald-700' : 'bg-slate-800 hover:bg-slate-700'}">${sd.icon}</button>`
+            ).join('') + `</div>`;
+        }
+        return `<div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
             <div class="flex justify-between items-start mb-2">
-                <div>
-                    <p class="text-xs font-medium">${def.icon} ${def.name} <span class="text-slate-500">Lv.${e.level}</span></p>
-                    <p class="text-[10px] text-slate-500">${statLine} · ${(def.salary * e.level)} €/s Gehalt</p>
-                </div>
+                <div><p class="text-xs font-medium">${def.icon} ${def.name} <span class="text-slate-500">Lv.${e.level}</span></p>
+                <p class="text-[10px] text-slate-500">${statLine} · ${(def.salary * e.level)} €/s Gehalt</p></div>
             </div>
-            <div class="flex gap-2">
+            ${specHtml}
+            <div class="flex gap-2 mt-2">
                 <button onclick="upgradeEmployee(${e.id})" class="flex-1 bg-emerald-800 hover:bg-emerald-700 text-[10px] py-1.5 rounded-lg">⬆️ Verbessern (${upgradeCost} €)</button>
                 <button onclick="fireEmployee(${e.id})" class="flex-1 bg-rose-900 hover:bg-rose-800 text-[10px] py-1.5 rounded-lg">✂️ Kündigen (-${fireCost} €)</button>
             </div>
@@ -889,11 +952,20 @@ function renderEmployeeList() {
     }).join('');
 }
 
+function setSpecialization(id, spec) {
+    const emp = state.employees.find(e => e.id === id);
+    if (!emp) return;
+    emp.specialization = spec;
+    toast("⚙️ Spezialisierung: " + specializations[spec].name, "info");
+    updateUI();
+}
+
 // ===================== CORE MECHANICS =====================
 function getTeamSpeed() {
     let speed = state.employees.reduce((sum, e) => sum + employeeDefs[e.type].baseSpeed * e.level, 0);
     if (state.research.cicd) speed *= 1.15;
     if (state.managerBoostActive > 0) speed *= 1.3;
+    speed *= (1 + state.permanentBoosts.speedBoost * 0.05);
     return speed;
 }
 
@@ -908,11 +980,11 @@ function getRewardMultiplier() {
     return mult;
 }
 
-function startProject(name, work, reward, rp) {
+function startProject(name, work, reward, rp, category, deadlineSeconds) {
     const slots = officeSlots[state.officeStage - 1] || 1;
     if (state.projects.length >= slots) { toast("Keine freien Projekt-Slots! Büro erweitern.", "warn"); return; }
     if (state.projects.length >= state.servers) { toast("Nicht genug Server-Kapazität!", "warn"); return; }
-    state.projects.push({ name, progress: 0, totalWork: work, reward, rp, milestonesHit: [] });
+    state.projects.push({ name, progress: 0, totalWork: work, reward, rp, category, milestonesHit: [], deadlineRemaining: deadlineSeconds || null, hadDeadline: !!deadlineSeconds });
     log("🚀 Neues Projekt gestartet: " + name);
     toast("🚀 Projekt gestartet: " + name, "info");
     switchTab('projects');
@@ -923,7 +995,7 @@ function hireStaff(type) {
     const def = employeeDefs[type];
     if (state.money < def.hireCost) { toast(`Nicht genug Kapital! Brauchst ${def.hireCost} €, hast ${Math.floor(state.money)} €.`, "warn"); return; }
     state.money -= def.hireCost;
-    state.employees.push({ id: state.nextEmployeeId++, type, level: 1 });
+    state.employees.push({ id: state.nextEmployeeId++, type, level: 1, specialization: 'none' });
     if (def.bugRisk) state.bugs += 1;
     log("👤 Neue Einstellung: " + def.name);
     toast("👤 " + def.name + " eingestellt!", "success");
@@ -978,6 +1050,7 @@ function upgradeOffice() {
     state.maxServers += 20;
     log("🏢 Büro-Umzug! Neue Stufe: " + officeNames[state.officeStage - 1]);
     toast("🏢 Umzug erfolgreich! " + officeNames[state.officeStage - 1], "success");
+    confettiBurst();
     updateUI();
 }
 
@@ -997,17 +1070,26 @@ function doIPO() {
     if (state.officeStage < 4) return;
     if (!confirm("IPO durchführen? Das Spiel resettet komplett, aber du erhältst +10% dauerhafte Belohnung.")) return;
     const newPrestige = state.prestige + 1;
-    const keep = { achievements: state.achievements, playerLevel: state.playerLevel, skillPoints: state.skillPoints, skills: state.skills, xp: state.xp };
+    const keep = { achievements: state.achievements, playerLevel: state.playerLevel, skillPoints: state.skillPoints, skills: state.skills, xp: state.xp, diamonds: state.diamonds, permanentBoosts: state.permanentBoosts };
+    const startMoney = 100 + keep.permanentBoosts.startCapital * 50;
     state = {
-        money: 100, bugs: 0, servers: 2, maxServers: 10,
-        officeStage: 1, reputation: 50, researchPoints: 0,
-        prestige: newPrestige,
+        money: startMoney, diamonds: keep.diamonds, bugs: 0, servers: 2, maxServers: 10,
+        officeStage: 1, reputation: 50, researchPoints: 0, prestige: newPrestige,
         research: { testing: false, cicd: false, autoscale: false, marketing: false, security: false },
         projects: [], marketOffers: [], employees: [], nextEmployeeId: 1,
-        activeRole: 'dev', streak: 0, salesBonus: 0, salesCooldown: 0, managerBoostActive: 0, managerCooldown: 0,
+        activeRole: 'dev', lastRoleSwitchTime: 0, roleHistory: [],
+        streak: 0, salesBonus: 0, salesCooldown: 0, managerBoostActive: 0, managerCooldown: 0,
         xp: keep.xp, playerLevel: keep.playerLevel, skillPoints: keep.skillPoints, skills: keep.skills,
+        permanentBoosts: keep.permanentBoosts,
         hasCompletedFirstProject: true, onboardingDismissed: true, achievements: keep.achievements,
-        dailyGoal: null, dailyGoalProgress: 0, dailyGoalClaimed: false
+        dailyGoal: null, dailyGoalProgress: 0, dailyGoalClaimed: false,
+        marketShare: 40, competitors: [
+            { name: "ByteForge GmbH", share: 20, growth: 0.15 },
+            { name: "CodeNest AG", share: 20, growth: 0.1 },
+            { name: "PixelWerk Solutions", share: 20, growth: 0.2 }
+        ],
+        marketTrend: { name: "Markt stabil", multiplier: 1, icon: "📊" },
+        totalMoneyEarned: 0
     };
     log("📈 IPO erfolgreich! Prestige-Stufe: " + newPrestige);
     toast("📈 IPO erfolgreich! Prestige " + newPrestige, "success");
@@ -1030,6 +1112,7 @@ function checkProjectCompletion() {
                 state.reputation = Math.max(0, state.reputation - 15);
                 log("💥 " + p.name + " fast gescheitert wegen Bugs! Nur " + Math.floor(finalReward) + " €.");
                 toast("💥 " + p.name + ": nur " + Math.floor(finalReward) + " € wegen Bugs!", "danger");
+                screenShake();
             } else if (state.bugs > 20) {
                 finalReward = Math.floor(finalReward * 0.7);
                 state.reputation = Math.max(0, state.reputation - 5);
@@ -1040,32 +1123,55 @@ function checkProjectCompletion() {
                 log("✅ " + p.name + " abgeschlossen! +" + Math.floor(finalReward) + " € · +" + finalRP + " RP");
                 toast("✅ " + p.name + " fertig! +" + Math.floor(finalReward) + " €", "success");
             }
+
+            if (p.hadDeadline && p.deadlineRemaining > 0) {
+                finalReward = Math.floor(finalReward * 1.3);
+                toast("⏱️ Deadline geschafft! +30% Bonus", "success");
+                unlockAchievement('deadlineHero');
+                confettiBurst();
+            }
+
             state.money += finalReward;
+            state.totalMoneyEarned += finalReward;
             state.researchPoints += finalRP;
             state.hasCompletedFirstProject = true;
             state.salesBonus = 0;
-            state.dailyGoalProgress = (state.dailyGoal && state.dailyGoal.key === 'completeProjects') ? state.dailyGoalProgress + 1 : state.dailyGoalProgress;
+            if (state.dailyGoal) {
+                if (state.dailyGoal.key === 'completeProjects') state.dailyGoalProgress++;
+                if (state.dailyGoal.key === 'earnMoney') state.dailyGoalProgress = state.totalMoneyEarned;
+            }
             unlockAchievement('firstProject');
             if (hadZeroBugs) unlockAchievement('perfectionist');
             addXP(20);
             return false;
         }
+        if (p.hadDeadline && p.deadlineRemaining !== null) {
+            p.deadlineRemaining--;
+            if (p.deadlineRemaining <= 0) {
+                p.reward = Math.floor(p.reward * 0.6);
+                p.hadDeadline = false;
+                toast("⏱️ Deadline verpasst! Belohnung reduziert.", "danger");
+                log("⏱️ Deadline für " + p.name + " verpasst.");
+                screenShake();
+            }
+        }
         return true;
     });
 }
 
-// ===================== RANDOM EVENTS =====================
 function triggerRandomEvent() {
     const luckBonus = state.skills.luckyStar * 0.05;
     const roll = Math.random() - luckBonus;
+    const bugResistFactor = 1 - state.permanentBoosts.bugResist * 0.05;
     if (roll < 0.04) {
         let hackFactor = state.research.security ? 0.3 : 1.0;
         let loss = Math.floor(state.money * 0.15 * hackFactor);
         state.money = Math.max(0, state.money - loss);
         log("🔓 Hacker-Angriff! Verlust: " + loss + " €");
         toast("🔓 Hacker-Angriff! -" + loss + " €", "danger");
+        screenShake();
     } else if (roll < 0.08) {
-        const newBugs = Math.floor(5 + Math.random() * 10);
+        const newBugs = Math.floor((5 + Math.random() * 10) * bugResistFactor);
         state.bugs += newBugs;
         log("🐛 Server-Crash! +" + newBugs + " Bugs.");
         toast("🐛 Server-Crash! +" + newBugs + " Bugs", "warn");
@@ -1084,18 +1190,27 @@ function triggerRandomEvent() {
 // ===================== GAME LOOP =====================
 setInterval(function() {
     const totalSpeed = getTeamSpeed();
-    const bugRateFactor = state.research.testing ? 0.6 : 1.0;
+    const bugRateFactor = (state.research.testing ? 0.6 : 1.0) * (1 - state.permanentBoosts.bugResist * 0.05);
 
     if (state.projects.length > 0 && totalSpeed > 0) {
         const perProjectSpeed = totalSpeed / state.projects.length;
-        state.projects.forEach(p => { p.progress += perProjectSpeed; checkMilestones(p); });
+        state.projects.forEach(p => {
+            let speedForProject = perProjectSpeed;
+            const specBonus = state.employees.filter(e => e.specialization && specializations[e.specialization].bonus[p.category]).length;
+            if (specBonus > 0) speedForProject *= 1.15;
+            p.progress += speedForProject;
+            checkMilestones(p);
+        });
 
         const internCount = state.employees.filter(e => e.type === 'intern').length;
         if (internCount > 0 && Math.random() < 0.3) state.bugs += internCount * bugRateFactor;
         checkProjectCompletion();
     }
 
-    const adminBugFix = state.employees.filter(e => e.type === 'admin').reduce((s, e) => s + 2 * e.level, 0);
+    let adminBugFix = state.employees.filter(e => e.type === 'admin').reduce((s, e) => {
+        let mult = e.specialization === 'devops' ? 1.4 : 1;
+        return s + 2 * e.level * mult;
+    }, 0);
     if (adminBugFix > 0) { state.bugs -= adminBugFix; if (state.bugs < 0) state.bugs = 0; }
 
     state.money -= getSalaryTotal();
@@ -1113,6 +1228,8 @@ setInterval(function() {
     if (state.managerBoostActive > 0) state.managerBoostActive--;
     else if (state.managerCooldown > 0) state.managerCooldown--;
 
+    simulateCompetitors();
+
     if (Math.random() < 0.05) triggerRandomEvent();
     maybeTriggerDecisionCard();
 
@@ -1120,9 +1237,7 @@ setInterval(function() {
 }, 1000);
 
 // ===================== SAVE / LOAD =====================
-function saveGame() {
-    localStorage.setItem('techImperiumSave', JSON.stringify(state));
-}
+function saveGame() { localStorage.setItem('techImperiumSave', JSON.stringify(state)); }
 
 function loadGame() {
     const saved = localStorage.getItem('techImperiumSave');
@@ -1135,6 +1250,7 @@ function loadGame() {
     }
     if (!state.marketOffers || state.marketOffers.length === 0) refreshMarket();
     if (!state.dailyGoal) generateDailyGoal();
+    document.getElementById('trendText').innerText = state.marketTrend.icon + " " + state.marketTrend.name;
 }
 
 function resetGame() {
