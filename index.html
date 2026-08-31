@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech-Imperium Tycoon - Hardcore Edition</title>
+    <title>Tech-Imperium Tycoon - Management Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col items-center p-4 md:p-6">
@@ -12,24 +12,24 @@
     <header class="w-full max-w-5xl bg-slate-900 p-5 rounded-xl shadow-xl mb-6 flex flex-col md:flex-row justify-between items-center border border-slate-800 gap-4">
         <div>
             <h1 id="officeLevel" class="text-xl md:text-2xl font-bold text-emerald-400">🏢 Garage (Stufe 1)</h1>
-            <p class="text-xs text-slate-400">Vom Hobby-Coder zum globalen Tech-Giganten</p>
+            <p class="text-xs text-slate-400">Vom Einzelkämpfer zum Software-Konzern-Chef</p>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
             <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
                 <p class="text-[10px] text-slate-400 uppercase tracking-wider">Kapital</p>
-                <p id="money" class="text-base md:text-lg font-bold text-emerald-400">0 €</p>
+                <p id="money" class="text-base md:text-lg font-bold text-emerald-400">100 €</p>
             </div>
             <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
-                <p class="text-[10px] text-slate-400 uppercase tracking-wider">Code-Zeilen</p>
-                <p id="code" class="text-base md:text-lg font-bold text-blue-400">0</p>
+                <p class="text-[10px] text-slate-400 uppercase tracking-wider">Aktives Projekt</p>
+                <p id="projectProgress" class="text-base md:text-lg font-bold text-blue-400">0%</p>
             </div>
             <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
-                <p class="text-[10px] text-slate-400 uppercase tracking-wider">Bugs (Tech Debt)</p>
+                <p class="text-[10px] text-slate-400 uppercase tracking-wider">Bugs</p>
                 <p id="bugs" class="text-base md:text-lg font-bold text-rose-400">0</p>
             </div>
             <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/50">
                 <p class="text-[10px] text-slate-400 uppercase tracking-wider">Server-Auslastung</p>
-                <p id="servers" class="text-base md:text-lg font-bold text-purple-400">0 / 5</p>
+                <p id="servers" class="text-base md:text-lg font-bold text-purple-400">2 / 10</p>
             </div>
         </div>
     </header>
@@ -37,76 +37,58 @@
     <!-- Hauptbereich -->
     <main class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        <!-- Spalte 1: Aktive Entwicklung & Energie -->
+        <!-- Spalte 1: Projekt-Management (Kein Spam-Klicken mehr!) -->
         <section class="bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800 flex flex-col justify-between space-y-4">
             <div>
-                <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-blue-400">💻 Entwicklung & Fokus</h2>
-                
-                <!-- Energieleiste -->
-                <div class="mb-4">
-                    <div class="flex justify-between text-xs text-slate-400 mb-1">
-                        <span>Energie (Ausdauer)</span>
-                        <span id="energyText">100 / 100</span>
+                <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-blue-400">📋 Projekt-Pipeline</h2>
+                <p class="text-[11px] text-slate-400 mb-4">Wähle ein Projekt. Dein Team arbeitet automatisch daran, bis es fertig ist.</p>
+
+                <!-- Aktuelles Projekt Info -->
+                <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-800 mb-4">
+                    <p id="currentProjectName" class="font-bold text-sm text-slate-200 mb-1">Kein Projekt aktiv</p>
+                    <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden border border-slate-700 mb-2">
+                        <div id="progressBar" class="bg-blue-500 h-full transition-all duration-200" style="width: 0%;"></div>
                     </div>
-                    <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden border border-slate-700">
-                        <div id="energyBar" class="bg-amber-500 h-full transition-all duration-200" style="width: 100%;"></div>
-                    </div>
+                    <p id="projectDetails" class="text-[10px] text-slate-400">Wähle unten einen Auftrag aus.</p>
                 </div>
 
-                <!-- Sprachauswahl -->
-                <p class="text-xs text-slate-400 mb-2">Programmiersprache wählen:</p>
-                <div class="grid grid-cols-3 gap-1.5 mb-4">
-                    <button onclick="setLang('Python', 1, 2)" id="btnPython" class="bg-blue-600 p-2 rounded text-xs font-bold transition border border-blue-400">Python</button>
-                    <button onclick="setLang('Java', 3, 5)" id="btnJava" class="bg-slate-800 hover:bg-slate-700 p-2 rounded text-xs font-bold transition border border-transparent">Java</button>
-                    <button onclick="setLang('C++', 6, 10)" id="btnCpp" class="bg-slate-800 hover:bg-slate-700 p-2 rounded text-xs font-bold transition border border-transparent">C++</button>
+                <!-- Projekt-Auswahl -->
+                <div class="space-y-2">
+                    <button onclick="startProject('Bugfix-Tool', 50, 30)" class="w-full bg-slate-800 hover:bg-slate-700 p-2 rounded text-left text-xs transition border border-slate-700 flex justify-between items-center">
+                        <span>🛠️ Bugfix-Tool (Klein)</span>
+                        <span class="text-emerald-400 font-bold">+60 €</span>
+                    </button>
+                    <button onclick="startProject('Mobile App', 200, 150)" class="w-full bg-slate-800 hover:bg-slate-700 p-2 rounded text-left text-xs transition border border-slate-700 flex justify-between items-center">
+                        <span>📱 Mobile App (Mittel)</span>
+                        <span class="text-emerald-400 font-bold">+300 €</span>
+                    </button>
+                    <button onclick="startProject('Enterprise Cloud', 800, 600)" class="w-full bg-slate-800 hover:bg-slate-700 p-2 rounded text-left text-xs transition border border-slate-700 flex justify-between items-center">
+                        <span>☁️ Cloud-Plattform (Groß)</span>
+                        <span class="text-emerald-400 font-bold">+1.500 €</span>
+                    </button>
                 </div>
             </div>
 
-            <div class="space-y-2">
-                <!-- Coden Button -->
-                <button onclick="writeCode()" id="codeBtn" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 transition font-bold py-4 rounded-lg shadow-md text-sm flex flex-col items-center justify-center gap-0.5">
-                    <span>⚡ Code schreiben</span>
-                    <span id="clickPowerText" class="text-[10px] font-normal text-blue-200">+1 Zeile, +2 Bugs (Kostet 5 Energie)</span>
-                </button>
-
-                <!-- Bugs fixen Button -->
-                <button onclick="fixBugs()" class="w-full bg-emerald-700 hover:bg-emerald-600 active:scale-95 transition font-bold py-2.5 rounded-lg shadow-md text-xs">
-                    🧹 Bugs manuell bereinigen (-10 Bugs)
-                </button>
-
-                <!-- Kaffee trinken -->
-                <button onclick="buyCoffee()" class="w-full bg-amber-700 hover:bg-amber-600 active:scale-95 transition font-medium py-2 rounded-lg text-xs flex justify-between px-3 items-center">
-                    <span>☕ Kaffee trinken (Energie auffüllen)</span>
-                    <span class="text-[10px] text-amber-200">10 €</span>
-                </button>
-            </div>
+            <!-- Notfall-Button (falls gar nichts geht) -->
+            <button onclick="manualCodeHelp()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 rounded-lg text-xs border border-slate-700">
+                💻 Selbst kurz mithelfen (+1% Projekt)
+            </button>
         </section>
 
-        <!-- Spalte 2: Management, Personal & Server -->
+        <!-- Spalte 2: Mitarbeiter & Team-Upgrades -->
         <section class="bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800 flex flex-col justify-between space-y-4">
             <div>
-                <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-emerald-400">📈 Infrastruktur & Team</h2>
+                <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-emerald-400">👥 Personal & Upgrades</h2>
                 
-                <div class="space-y-2.5">
-                    <!-- App monetarisieren -->
+                <div class="space-y-3">
+                    <!-- Praktikant -->
                     <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
                         <div>
-                            <p class="font-medium text-xs">Release & Monetarisieren</p>
-                            <p class="text-[10px] text-slate-400">20 Code = 15 € (Minus Bugs)</p>
+                            <p class="font-medium text-xs">Praktikant (<span id="internCount">0</span>)</p>
+                            <p class="text-[10px] text-slate-400">75 € | Bringt +1% Speed, +1 Bug</p>
                         </div>
-                        <button onclick="sellCode()" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded font-medium text-xs transition">
-                            Verkaufen
-                        </button>
-                    </div>
-
-                    <!-- Server mieten -->
-                    <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
-                        <div>
-                            <p class="font-medium text-xs">Server-Rack mieten</p>
-                            <p class="text-[10px] text-slate-400">100 € (+10 Kapazität)</p>
-                        </div>
-                        <button onclick="buyServer()" class="bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded font-medium text-xs transition">
-                            Mieten
+                        <button onclick="hireStaff('intern')" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded font-medium text-xs transition">
+                            Holen
                         </button>
                     </div>
 
@@ -114,109 +96,94 @@
                     <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
                         <div>
                             <p class="font-medium text-xs">Junior Dev (<span id="devCount">0</span>)</p>
-                            <p class="text-[10px] text-slate-400">250 € (+1 Code/s, +0.5 Bug/s)</p>
+                            <p class="text-[10px] text-slate-400">250 € | Bringt +3% Speed</p>
                         </div>
-                        <button onclick="hireDev()" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded font-medium text-xs transition">
+                        <button onclick="hireStaff('dev')" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded font-medium text-xs transition">
                             Einstellen
                         </button>
                     </div>
 
-                    <!-- Sysadmin -->
+                    <!-- Senior Dev -->
                     <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
                         <div>
-                            <p class="font-medium text-xs">Sysadmin / QA (<span id="adminCount">0</span>)</p>
-                            <p class="text-[10px] text-slate-400">600 € (Reduziert Bugs)</p>
+                            <p class="font-medium text-xs">Senior Dev (<span id="seniorCount">0</span>)</p>
+                            <p class="text-[10px] text-slate-400">800 € | Bringt +10% Speed</p>
                         </div>
-                        <button onclick="hireAdmin()" class="bg-rose-600 hover:bg-rose-500 px-3 py-1.5 rounded font-medium text-xs transition">
+                        <button onclick="hireStaff('senior')" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded font-medium text-xs transition">
                             Einstellen
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Büro-Upgrade -->
+            <!-- Sysadmin / QA -->
             <div class="bg-slate-800/40 p-3 rounded-lg border border-slate-800">
                 <div class="flex justify-between items-center">
                     <div>
-                        <p class="font-medium text-xs">Büro-Erweiterung</p>
-                        <p id="officeCostText" class="text-[10px] text-slate-400">Kostet: 1.500 €</p>
+                        <p class="font-medium text-xs">QA / Bugfixer (<span id="adminCount">0</span>)</p>
+                        <p class="text-[10px] text-slate-400">400 € | Entfernt aktiv Bugs</p>
                     </div>
-                    <button onclick="upgradeOffice()" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-2 rounded font-medium text-xs transition">
-                        Umziehen
+                    <button onclick="hireStaff('admin')" class="bg-rose-600 hover:bg-rose-500 px-3 py-1.5 rounded font-medium text-xs transition">
+                        Einstellen
                     </button>
                 </div>
             </div>
         </section>
 
-        <!-- Spalte 3: Forschungsbaum & Tech-Stack -->
-        <section class="bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800 flex flex-col justify-between">
+        <!-- Spalte 3: Infrastruktur & Büro -->
+        <section class="bg-slate-900 p-5 rounded-xl shadow-xl border border-slate-800 flex flex-col justify-between space-y-4">
             <div>
-                <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-purple-400">🔬 Forschungsbaum</h2>
-                <p class="text-[11px] text-slate-400 mb-3">Erforsche neue Technologien, um deinen Ertrag zu multiplizieren.</p>
-
-                <div class="space-y-2.5">
-                    <!-- Forschung 1 -->
-                    <div id="res1Box" class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center">
+                <h2 class="text-md font-semibold mb-3 border-b border-slate-800 pb-2 text-purple-400">🏢 Infrastruktur</h2>
+                
+                <div class="space-y-3">
+                    <!-- Server mieten -->
+                    <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-800">
                         <div>
-                            <p class="font-medium text-xs text-slate-200">Agiles Projektmanagement</p>
-                            <p class="text-[10px] text-slate-400">Kosten: 50 Code, 200 €</p>
+                            <p class="font-medium text-xs">Server-Rack</p>
+                            <p class="text-[10px] text-slate-400">100 € (+5 Kapazität)</p>
                         </div>
-                        <button onclick="researchTech(1, 50, 200)" id="res1Btn" class="bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded text-xs transition">
-                            Erforschen
+                        <button onclick="buyServer()" class="bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded font-medium text-xs transition">
+                            Mieten
                         </button>
                     </div>
 
-                    <!-- Forschung 2 -->
-                    <div id="res2Box" class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center opacity-50">
-                        <div>
-                            <p class="font-medium text-xs text-slate-200">KI-Code-Assistenz</p>
-                            <p class="text-[10px] text-slate-400">Kosten: 200 Code, 1.000 €</p>
-                        </div>
-                        <button onclick="researchTech(2, 200, 1000)" id="res2Btn" class="bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded text-xs transition" disabled>
-                            Gesperrt
-                        </button>
-                    </div>
-
-                    <!-- Forschung 3 -->
-                    <div id="res3Box" class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center opacity-50">
-                        <div>
-                            <p class="font-medium text-xs text-slate-200">Eigene Cloud-Infrastruktur</p>
-                            <p class="text-[10px] text-slate-400">Kosten: 600 Code, 5.000 €</p>
-                        </div>
-                        <button onclick="researchTech(3, 600, 5000)" id="res3Btn" class="bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded text-xs transition" disabled>
-                            Gesperrt
+                    <!-- Büro umziehen -->
+                    <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-800">
+                        <p class="font-medium text-xs mb-1">Büro-Erweiterung</p>
+                        <p id="officeCostText" class="text-[10px] text-slate-400 mb-2">Kostet: 1.000 €</p>
+                        <button onclick="upgradeOffice()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-1.5 rounded font-medium text-xs transition">
+                            Umziehen
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-4 pt-3 border-t border-slate-800 text-center">
-                <p id="eventLog" class="text-[11px] text-amber-400 italic">Status: Bereit für den Aufbau des Tech-Imperiums.</p>
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
+                <p id="eventLog" class="text-[11px] text-amber-400 italic">Status: Bereit für den Aufbau.</p>
             </div>
         </section>
 
     </main>
 
-    <!-- JavaScript Hardcore Spiel-Logik -->
+    <!-- JavaScript Management Logik -->
     <script>
-        let money = 0;
-        let code = 0;
+        let money = 100;
         let bugs = 0;
         let servers = 2;
         let maxServers = 10;
-        
-        let energy = 100;
-        let maxEnergy = 100;
 
+        let interns = 0;
         let devs = 0;
+        let seniors = 0;
         let admins = 0;
-        
-        let currentLang = 'Python';
-        let clickPower = 1;
-        let bugPower = 2;
+
+        let activeProject = null;
+        let projectProgress = 0;
+        let projectTotalWork = 0;
+        let projectReward = 0;
 
         let officeStage = 1;
-        let officeCosts = [1500, 8000, 30000];
+        let officeCosts = [1000, 5000, 20000];
         let officeNames = [
             "🏢 Garage (Stufe 1)", 
             "💻 WG-Zimmer (Stufe 2)", 
@@ -224,19 +191,24 @@
             "🚀 Tech-Campus (Max)"
         ];
 
-        let researchUnlocked = [false, false, false];
-
         function updateUI() {
             document.getElementById('money').innerText = money.toLocaleString() + ' €';
-            document.getElementById('code').innerText = code.toLocaleString();
             document.getElementById('bugs').innerText = bugs;
             document.getElementById('servers').innerText = servers + ' / ' + maxServers;
             
-            document.getElementById('energyText').innerText = Math.floor(energy) + ' / ' + maxEnergy;
-            document.getElementById('energyBar').style.width = (energy / maxEnergy * 100) + '%';
-            
+            document.getElementById('internCount').innerText = interns;
             document.getElementById('devCount').innerText = devs;
+            document.getElementById('seniorCount').innerText = seniors;
             document.getElementById('adminCount').innerText = admins;
+
+            if (activeProject) {
+                let percent = Math.min(100, Math.floor((projectProgress / projectTotalWork) * 100));
+                document.getElementById('projectProgress').innerText = percent + '%';
+                document.getElementById('progressBar').style.width = percent + '%';
+            } else {
+                document.getElementById('projectProgress').innerText = '0%';
+                document.getElementById('progressBar').style.width = '0%';
+            }
 
             if (officeStage - 1 < officeNames.length) {
                 document.getElementById('officeLevel').innerText = officeNames[officeStage - 1];
@@ -248,98 +220,51 @@
             }
         }
 
-        function setLang(lang, power, bPower) {
-            currentLang = lang;
-            clickPower = power;
-            bugPower = bPower;
-            
-            // Forschungen Multiplikatoren einrechnen
-            if (researchUnlocked[1]) { clickPower *= 2; }
-            
-            document.getElementById('clickPowerText').innerText = "+" + clickPower + " Zeilen, +" + bugPower + " Bugs (Kostet 5 Energie)";
-            
-            document.getElementById('btnPython').className = lang === 'Python' ? "bg-blue-600 p-2 rounded text-xs font-bold transition border border-blue-400" : "bg-slate-800 hover:bg-slate-700 p-2 rounded text-xs font-bold transition border border-transparent";
-            document.getElementById('btnJava').className = lang === 'Java' ? "bg-blue-600 p-2 rounded text-xs font-bold transition border border-blue-400" : "bg-slate-800 hover:bg-slate-700 p-2 rounded text-xs font-bold transition border border-transparent";
-            document.getElementById('btnCpp').className = lang === 'C++' ? "bg-blue-600 p-2 rounded text-xs font-bold transition border border-blue-400" : "bg-slate-800 hover:bg-slate-700 p-2 rounded text-xs font-bold transition border border-transparent";
-        }
-
-        function writeCode() {
-            if (energy >= 5) {
-                code += clickPower;
-                bugs += bugPower;
-                energy -= 5;
-                updateUI();
-            } else {
-                document.getElementById('eventLog').innerText = "⚠️ Zu müde! Trink einen Kaffee.";
-            }
-        }
-
-        function fixBugs() {
-            if (bugs >= 10) {
-                bugs -= 10;
-            } else {
-                bugs = 0;
-            }
+        function startProject(name, work, reward) {
+            activeProject = name;
+            projectTotalWork = work;
+            projectProgress = 0;
+            projectReward = reward;
+            document.getElementById('currentProjectName').innerText = "Projekt: " + name;
+            document.getElementById('projectDetails').innerText = "Ziel: " + work + " Einheiten Code | Lohn: " + reward + " €";
+            document.getElementById('eventLog').innerText = "🚀 Arbeite an: " + name;
             updateUI();
         }
 
-        function buyCoffee() {
-            if (money >= 10) {
-                money -= 10;
-                energy = maxEnergy;
-                document.getElementById('eventLog').innerText = "☕ Frische Energie getankt!";
+        function manualCodeHelp() {
+            if (activeProject) {
+                projectProgress += projectTotalWork * 0.02; // 2% Fortschritt per Klick
+                checkProjectCompletion();
                 updateUI();
             } else {
-                alert("Nicht genug Geld für Kaffee!");
+                alert("Wähle zuerst ein Projekt aus der Liste aus!");
             }
         }
 
-        function sellCode() {
-            if (code >= 20) {
-                code -= 20;
-                let earnings = 15 * officeStage;
-                // Strafabzug durch Bugs
-                if (bugs > 50) {
-                    earnings = Math.floor(earnings * 0.5);
-                    document.getElementById('eventLog').innerText = "⚠️ Zu viele Bugs! Kunden beschweren sich (Einnahmen halbiert).";
-                } else {
-                    document.getElementById('eventLog').innerText = "✅ Software erfolgreich verkauft!";
-                }
-                money += earnings;
-                updateUI();
+        function hireStaff(type) {
+            if (type === 'intern' && money >= 75) {
+                money -= 75; interns++; bugs += 1;
+            } else if (type === 'dev' && money >= 250) {
+                money -= 250; devs++;
+            } else if (type === 'senior' && money >= 800) {
+                money -= 800; seniors++;
+            } else if (type === 'admin' && money >= 400) {
+                money -= 400; admins++;
             } else {
-                alert("Du brauchst mindestens 20 Code-Zeilen zum Verkaufen!");
+                alert("Nicht genug Kapital!");
+                return;
             }
+            updateUI();
         }
 
         function buyServer() {
             if (money >= 100) {
                 money -= 100;
                 servers += 1;
-                maxServers += 10;
+                maxServers += 5;
                 updateUI();
             } else {
-                alert("Nicht genug Kapital für Server!");
-            }
-        }
-
-        function hireDev() {
-            if (money >= 250) {
-                money -= 250;
-                devs += 1;
-                updateUI();
-            } else {
-                alert("Nicht genug Kapital für Junior Dev!");
-            }
-        }
-
-        function hireAdmin() {
-            if (money >= 600) {
-                money -= 600;
-                admins += 1;
-                updateUI();
-            } else {
-                alert("Nicht genug Kapital für Sysadmin!");
+                alert("Nicht genug Kapital!");
             }
         }
 
@@ -349,10 +274,9 @@
                 if (money >= officeCosts[index]) {
                     money -= officeCosts[index];
                     officeStage++;
-                    maxEnergy += 50;
-                    energy = maxEnergy;
+                    maxServers += 20;
                     updateUI();
-                    alert("Glückwunsch zum Umzug in ein besseres Büro! Maximale Energie erhöht.");
+                    alert("Glückwunsch zum Umzug!");
                 } else {
                     alert("Nicht genug Kapital für den Umzug!");
                 }
@@ -361,58 +285,40 @@
             }
         }
 
-        function researchTech(id, codeCost, moneyCost) {
-            if (code >= codeCost && money >= moneyCost) {
-                code -= codeCost;
-                money -= moneyCost;
-                researchUnlocked[id] = true;
-                
-                if (id === 1) {
-                    document.getElementById('res1Box').style.opacity = "0.5";
-                    document.getElementById('res1Btn').innerText = "Erforscht";
-                    document.getElementById('res1Btn').disabled = true;
-                    
-                    // Freischalten von Forschung 2
-                    document.getElementById('res2Box').style.opacity = "1";
-                    document.getElementById('res2Btn').innerText = "Erforschen";
-                    document.getElementById('res2Btn').disabled = false;
-                    clickPower *= 2;
-                } else if (id === 2) {
-                    document.getElementById('res2Box').style.opacity = "0.5";
-                    document.getElementById('res2Btn').innerText = "Erforscht";
-                    document.getElementById('res2Btn').disabled = true;
-                    
-                    // Freischalten von Forschung 3
-                    document.getElementById('res3Box').style.opacity = "1";
-                    document.getElementById('res3Btn').innerText = "Erforschen";
-                    document.getElementById('res3Btn').disabled = false;
-                } else if (id === 3) {
-                    document.getElementById('res3Box').style.opacity = "0.5";
-                    document.getElementById('res3Btn').innerText = "Erforscht";
-                    document.getElementById('res3Btn').disabled = true;
+        function checkProjectCompletion() {
+            if (activeProject && projectProgress >= projectTotalWork) {
+                // Bug-Abzug berechnen
+                let finalReward = projectReward;
+                if (bugs > 20) {
+                    finalReward = Math.floor(finalReward * 0.7);
+                    document.getElementById('eventLog').innerText = "⚠️ Projekt fertig, aber wegen Bugs Abzüge erhalten!";
+                } else {
+                    document.getElementById('eventLog').innerText = "✅ " + activeProject + " erfolgreich abgeschlossen! +" + finalReward + " €";
                 }
-                alert("Technologie erfolgreich erforscht!");
-                updateUI();
-            } else {
-                alert("Nicht genug Code oder Geld für diese Forschung!");
+                money += finalReward;
+                activeProject = null;
+                document.getElementById('currentProjectName').innerText = "Kein Projekt aktiv";
+                document.getElementById('projectDetails').innerText = "Wähle unten einen neuen Auftrag aus.";
             }
         }
 
-        // Game Loop (Passives System)
+        // Game Loop (Das Team arbeitet automatisch im Hintergrund)
         setInterval(function() {
-            // Energie regeneriert sich langsam von allein
-            if (energy < maxEnergy) {
-                energy += 1;
-                if (energy > maxEnergy) energy = maxEnergy;
+            // Gesamte Arbeitskraft der Mitarbeiter berechnen
+            let totalSpeed = (interns * 0.5) + (devs * 1.5) + (seniors * 4.0);
+
+            if (activeProject && totalSpeed > 0) {
+                projectProgress += totalSpeed;
+                
+                // Praktikanten machen manchmal Bugs
+                if (interns > 0 && Math.random() < 0.3) {
+                    bugs += interns;
+                }
+
+                checkProjectCompletion();
             }
 
-            // Entwickler generieren Code und Bugs
-            if (devs > 0) {
-                code += devs;
-                bugs += Math.round(devs * 0.5);
-            }
-
-            // Sysadmins entfernen automatisch Bugs
+            // Admins fixen Bugs
             if (admins > 0) {
                 bugs -= admins * 2;
                 if (bugs < 0) bugs = 0;
